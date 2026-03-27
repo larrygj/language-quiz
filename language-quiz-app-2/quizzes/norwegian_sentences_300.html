@@ -1,0 +1,518 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>Norsk — Sentence Quiz</title>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:wght@700;900&family=Inter:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg:#0d1117;--card:#161c26;--border:#243040;
+    --accent:#ba2022;--accent2:#4a7ab5;
+    --correct:#4be87e;--wrong:#e84b4b;
+    --text:#e8edf5;--muted:#6b7a8d;--radius:12px;
+  }
+  *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
+  body{background:var(--bg);color:var(--text);font-family:'Inter',sans-serif;min-height:100vh;min-height:-webkit-fill-available;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:20px;overflow-x:hidden;}
+  body::before{content:'';position:fixed;inset:0;background:
+    radial-gradient(ellipse 65% 45% at 10% 10%,rgba(186,32,34,0.07) 0%,transparent 55%),
+    radial-gradient(ellipse 55% 45% at 90% 85%,rgba(74,122,181,0.07) 0%,transparent 55%);
+    pointer-events:none;z-index:0;}
+  .container{position:relative;z-index:1;width:100%;max-width:600px;}
+
+  /* SPLASH */
+  #splash-screen{text-align:center;padding:20px;}
+  .splash-logo{font-family:'Fraunces',serif;font-size:clamp(2.8rem,10vw,4.4rem);font-weight:900;letter-spacing:-2px;line-height:1;margin-bottom:6px;}
+  .splash-logo .n{color:var(--accent);}
+  .splash-logo .o{color:var(--accent2);}
+  .splash-tagline{font-size:0.78rem;color:var(--muted);letter-spacing:0.2em;text-transform:uppercase;margin-bottom:32px;}
+  .splash-features{list-style:none;text-align:left;display:inline-flex;flex-direction:column;gap:14px;margin-bottom:38px;background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:22px 26px;width:100%;max-width:400px;}
+  .splash-features li{display:flex;align-items:center;gap:12px;font-size:0.93rem;color:var(--text);}
+  .splash-features li .icon{font-size:1.3rem;width:28px;flex-shrink:0;text-align:center;}
+  .start-btn{background:var(--accent);color:#fff;border:none;border-radius:var(--radius);font-family:'Inter',sans-serif;font-size:1.05rem;font-weight:500;padding:18px 56px;cursor:pointer;letter-spacing:0.03em;display:inline-block;}
+  .start-btn:active{transform:scale(0.96);background:#911819;}
+  .splash-note{color:var(--muted);font-size:0.74rem;margin-top:14px;}
+
+  /* HEADER */
+  header{text-align:center;margin-bottom:22px;}
+  .logo{font-family:'Fraunces',serif;font-size:clamp(1.8rem,5vw,2.5rem);font-weight:900;letter-spacing:-1px;}
+  .logo .n{color:var(--accent);}
+  .logo .o{color:var(--accent2);}
+  .subtitle{color:var(--muted);font-size:0.72rem;letter-spacing:0.16em;text-transform:uppercase;margin-top:4px;}
+
+  /* PROGRESS */
+  .progress-row{display:flex;align-items:center;gap:10px;margin-bottom:14px;}
+  .progress-bar-wrap{flex:1;height:4px;background:var(--border);border-radius:99px;overflow:hidden;}
+  .progress-bar-fill{height:100%;background:linear-gradient(90deg,var(--accent),var(--accent2));border-radius:99px;transition:width 0.5s cubic-bezier(.4,0,.2,1);}
+  .progress-label{font-size:0.72rem;color:var(--muted);white-space:nowrap;}
+  .score-badge{background:var(--card);border:1px solid var(--border);border-radius:99px;padding:4px 12px;font-size:0.78rem;font-weight:500;color:var(--accent2);white-space:nowrap;}
+
+  /* SENTENCE CARD */
+  .sentence-card{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:28px 22px 22px;margin-bottom:12px;position:relative;transition:border-color 0.3s;}
+  .sentence-card.correct{border-color:var(--correct);}
+  .sentence-card.wrong{border-color:var(--wrong);}
+  .sentence-number{position:absolute;top:12px;left:16px;font-size:0.65rem;color:var(--muted);letter-spacing:0.1em;text-transform:uppercase;}
+  .speak-btn{position:absolute;top:10px;right:14px;background:none;border:1px solid var(--border);border-radius:99px;color:var(--accent2);font-size:1rem;cursor:pointer;padding:4px 10px;line-height:1.5;}
+  .speak-btn:active{background:rgba(74,122,181,0.15);border-color:var(--accent2);}
+  .sentence-label{font-size:0.68rem;color:var(--muted);letter-spacing:0.12em;text-transform:uppercase;margin-bottom:10px;margin-top:4px;}
+  .norsk-sentence{font-family:'Fraunces',serif;font-size:clamp(1.05rem,3.2vw,1.38rem);font-weight:700;line-height:1.45;color:var(--text);}
+
+  /* CHOICES */
+  .choices{display:flex;flex-direction:column;gap:8px;margin-bottom:12px;}
+  .choice-btn{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);color:var(--text);font-family:'Inter',sans-serif;font-size:0.88rem;font-weight:400;padding:14px 16px;cursor:pointer;text-align:left;line-height:1.4;}
+  .choice-btn:active:not(:disabled){background:rgba(74,122,181,0.08);border-color:var(--accent2);transform:scale(0.99);}
+  .choice-btn.correct{background:rgba(75,232,126,0.12);border-color:var(--correct);color:var(--correct);font-weight:500;}
+  .choice-btn.wrong{background:rgba(232,75,75,0.12);border-color:var(--wrong);color:var(--wrong);font-weight:500;}
+  .choice-btn:disabled{cursor:default;}
+
+  /* FEEDBACK */
+  .feedback{min-height:34px;text-align:center;font-size:0.87rem;color:var(--muted);margin-bottom:10px;}
+  .feedback.show-correct{color:var(--correct);font-weight:500;}
+  .feedback.show-wrong{color:var(--wrong);font-weight:500;}
+
+  /* NEXT */
+  .next-btn{width:100%;background:var(--accent);color:#fff;border:none;border-radius:var(--radius);font-family:'Inter',sans-serif;font-size:0.95rem;font-weight:500;padding:15px;cursor:pointer;display:none;}
+  .next-btn:active{background:#911819;transform:scale(0.98);}
+  .next-btn.visible{display:block;}
+
+  /* DOTS */
+  .dots-row{display:flex;gap:5px;flex-wrap:wrap;justify-content:center;margin-top:12px;}
+  .dot{width:10px;height:10px;border-radius:50%;background:var(--border);transition:background 0.3s;}
+  .dot.correct{background:var(--correct);}
+  .dot.wrong{background:var(--wrong);}
+
+  /* RESULTS */
+  #results-screen{display:none;text-align:center;padding:30px 20px;}
+  .results-emoji{font-size:5rem;margin-bottom:14px;animation:pop 0.5s cubic-bezier(.4,0,.2,1);}
+  @keyframes pop{0%{transform:scale(0.3);opacity:0;}70%{transform:scale(1.15);}100%{transform:scale(1);opacity:1;}}
+  .results-title{font-family:'Fraunces',serif;font-size:2.2rem;font-weight:900;margin-bottom:8px;letter-spacing:-1px;}
+  .results-champ{color:var(--accent);}
+  .results-score{font-size:1.05rem;color:var(--muted);margin-bottom:28px;line-height:1.8;}
+  .results-score strong{color:var(--text);font-size:1.4rem;}
+  .restart-btn{background:var(--accent);color:#fff;border:none;border-radius:var(--radius);font-family:'Inter',sans-serif;font-size:1rem;font-weight:500;padding:16px 40px;cursor:pointer;}
+  .restart-btn:active{background:#911819;}
+
+  @keyframes shake{0%,100%{transform:translateX(0)}20%{transform:translateX(-6px)}40%{transform:translateX(6px)}60%{transform:translateX(-4px)}80%{transform:translateX(4px)}}
+  .shake{animation:shake 0.35s ease;}
+  @keyframes pulse-correct{0%{box-shadow:0 0 0 0 rgba(75,232,126,0.4)}70%{box-shadow:0 0 0 12px rgba(75,232,126,0)}100%{box-shadow:0 0 0 0 rgba(75,232,126,0)}}
+  .pulse-correct{animation:pulse-correct 0.5s ease;}
+</style>
+</head>
+<body>
+<div class="container">
+
+  <!-- SPLASH -->
+  <div id="splash-screen">
+    <div class="splash-logo"><span class="n">N</span><span class="o">o</span>rsk</div>
+    <div class="splash-tagline">Intermediate Sentence Quiz</div>
+    <ul class="splash-features">
+      <li><span class="icon">🇳🇴</span> 300 intermediate Norwegian sentences</li>
+      <li><span class="icon">🔊</span> Each sentence spoken in Norwegian</li>
+      <li><span class="icon">🎯</span> Pick the correct English translation</li>
+      <li><span class="icon">🏆</span> Score 17+ out of 20 and earn Mester!</li>
+    </ul>
+    <button class="start-btn" id="start-btn">Begynn! &nbsp;→</button>
+    <div class="splash-note">Tap to unlock audio &amp; begin</div>
+  </div>
+
+  <!-- QUIZ -->
+  <div id="quiz-screen" style="display:none">
+    <header>
+      <div class="logo"><span class="n">N</span><span class="o">o</span>rsk</div>
+      <div class="subtitle">Intermediate Sentence Quiz</div>
+    </header>
+    <div class="progress-row">
+      <div class="progress-bar-wrap"><div class="progress-bar-fill" id="progress-bar" style="width:0%"></div></div>
+      <div class="progress-label" id="progress-label">0 / 20</div>
+      <div class="score-badge">⭐ <span id="score-display">0</span></div>
+    </div>
+    <div class="sentence-card" id="sentence-card">
+      <div class="sentence-number" id="sentence-number">Sentence 1</div>
+      <button class="speak-btn" id="speak-btn">🔊</button>
+      <div class="sentence-label">Translate into English:</div>
+      <div class="norsk-sentence" id="norsk-sentence">—</div>
+    </div>
+    <div class="choices" id="choices"></div>
+    <div class="feedback" id="feedback"></div>
+    <button class="next-btn" id="next-btn">Next sentence →</button>
+    <div class="dots-row" id="dots-row"></div>
+  </div>
+
+  <!-- RESULTS -->
+  <div id="results-screen">
+    <div class="results-emoji" id="results-emoji">🎉</div>
+    <div class="results-title" id="results-title">Mester!</div>
+    <div class="results-score" id="results-score"></div>
+    <button class="restart-btn" onclick="restartQuiz()">Spill igjen</button>
+  </div>
+
+</div>
+<script>
+const sentenceBank = [
+
+  // ── DAILY LIFE & ROUTINES ──
+  {no:"Jeg våkner tidlig hver dag.",en:"I wake up early every day.",decoys:["I go to bed early every day.","I eat early every day.","I work early every day."]},
+  {no:"Hun kommer alltid for sent på jobb.",en:"She always arrives late to work.",decoys:["She always leaves early from work.","She never misses work.","She is never on time for anything."]},
+  {no:"Vi må dra før klokka åtte.",en:"We have to leave before eight.",decoys:["We have to arrive before eight.","We want to leave after eight.","We need to get up before eight."]},
+  {no:"Kan du hjelpe meg med å finne nøklene mine?",en:"Can you help me find my keys?",decoys:["Can you help me carry my keys?","Could you give me your keys?","Can you help me look for my bag?"]},
+  {no:"Jeg glemte å slå av lyset.",en:"I forgot to turn off the light.",decoys:["I forgot to turn on the light.","I remembered to turn off the light.","I couldn't find the light switch."]},
+  {no:"Jeg må innom banken i ettermiddag.",en:"I need to stop by the bank this afternoon.",decoys:["I need to call the bank this afternoon.","I want to go to the market this afternoon.","I have to work at the bank this afternoon."]},
+  {no:"Når stenger supermarkedet?",en:"When does the supermarket close?",decoys:["When does the supermarket open?","What time do you go to the supermarket?","How far is the supermarket from here?"]},
+  {no:"Jeg foretrekker å bli hjemme denne helgen.",en:"I prefer to stay home this weekend.",decoys:["I prefer to go out this weekend.","I have to stay home this weekend.","I don't want to work this weekend."]},
+  {no:"Jeg prøver å spare penger.",en:"I am trying to save money.",decoys:["I am trying to earn money.","I am trying to spend less money.","I am trying to borrow some money."]},
+  {no:"Det tok meg over en time å komme dit.",en:"It took me more than an hour to get there.",decoys:["It took me less than an hour to arrive.","I left more than an hour ago.","I waited more than an hour to leave."]},
+  {no:"Hvor lenge har du ventet?",en:"How long have you been waiting?",decoys:["How much longer do you have to wait?","When did you start waiting?","Why have you been waiting so long?"]},
+  {no:"Barnet oppførte seg veldig bra i dag.",en:"The child behaved very well today.",decoys:["The child played very well today.","The child ate very well today.","The child didn't feel well today."]},
+  {no:"Jeg lager middag hjemme i dag.",en:"I am making dinner at home today.",decoys:["I am eating out today.","I ordered food for dinner today.","I am skipping dinner today."]},
+  {no:"Han bruker lang tid på å kle på seg om morgenen.",en:"He takes a long time to get dressed in the morning.",decoys:["He gets up very early in the morning.","He rarely gets dressed before noon.","He has a long commute every morning."]},
+  {no:"Jeg rydder alltid opp etter meg.",en:"I always clean up after myself.",decoys:["I never clean up after others.","I sometimes forget to clean up.","I always help others clean up."]},
+
+  // ── WORK & SCHOOL ──
+  {no:"Jeg har et viktig møte i morgen tidlig.",en:"I have an important meeting tomorrow morning.",decoys:["I had an important meeting yesterday morning.","I have an important presentation tomorrow afternoon.","I need to prepare for a meeting next week."]},
+  {no:"Sjefen ba oss om å bli ferdig med rapporten.",en:"The boss asked us to finish the report.",decoys:["The boss told us to start the report.","The boss asked us to review the report.","The boss gave us a new report to read."]},
+  {no:"Jeg ble sparket uten noen grunn.",en:"I was fired without any reason.",decoys:["I quit without any reason.","I was promoted without any reason.","I resigned without giving a reason."]},
+  {no:"Hun har jobbet i den bedriften i tre år.",en:"She has worked at that company for three years.",decoys:["She worked at that company for three years.","She is going to work there for three more years.","She started working there three years from now."]},
+  {no:"Eksamen var vanskeligere enn jeg hadde forventet.",en:"The exam was harder than I expected.",decoys:["The exam was easier than I expected.","The exam was exactly as I had expected.","The exam took longer than I expected."]},
+  {no:"Jeg må forbedre engelsknivået mitt.",en:"I need to improve my English level.",decoys:["I want to learn English from scratch.","I need to test my English level.","I have already improved my English level."]},
+  {no:"Er du ferdig med å gå gjennom dokumentene?",en:"Have you finished going through the documents?",decoys:["Have you started reviewing the documents?","Did you send the documents already?","Can you look through the documents again?"]},
+  {no:"Fristen er på fredag.",en:"The deadline is Friday.",decoys:["The meeting is on Friday.","The project starts on Friday.","The presentation is on Friday."]},
+  {no:"Jeg fikk tildelt et nytt prosjekt forrige uke.",en:"I was assigned a new project last week.",decoys:["I finished a new project last week.","I started a new project next week.","I applied for a new project last week."]},
+  {no:"Jeg studerte hele natten til eksamen.",en:"I studied all night for the exam.",decoys:["I slept all night before the exam.","I worked all night on the exam.","I went through my notes the night before."]},
+  {no:"Lønnen min ble ikke utbetalt denne måneden.",en:"My salary was not paid this month.",decoys:["My salary was reduced this month.","I didn't receive a bonus this month.","My salary was paid late this month."]},
+  {no:"Vi må levere prosjektet til neste uke.",en:"We have to hand in the project by next week.",decoys:["We finished the project last week.","We need to start the project next week.","We presented the project last week."]},
+
+  // ── FEELINGS & OPINIONS ──
+  {no:"Jeg er veldig glad for at du kom.",en:"I'm very glad you came.",decoys:["I'm sorry you had to come.","I'm surprised you came.","I'm glad you are leaving."]},
+  {no:"Jeg liker ikke måten han snakket til meg på.",en:"I don't like how he spoke to me.",decoys:["I don't remember how he spoke to me.","I didn't understand how he spoke to me.","I liked the way he spoke to me."]},
+  {no:"Jeg synes du har rett.",en:"I think you are right.",decoys:["I think you are wrong.","It seems to me that you disagree.","I don't think you are right."]},
+  {no:"Jeg er lei av at du alltid kommer for sent.",en:"I'm fed up with you always arriving late.",decoys:["I'm worried that you always arrive late.","I'm surprised you always arrive late.","I don't mind that you always arrive late."]},
+  {no:"Nyheten overrasket meg veldig.",en:"The news surprised me a lot.",decoys:["The news worried me a lot.","The news didn't affect me much.","I wasn't surprised by the news."]},
+  {no:"Han er redd for å snakke foran folk.",en:"He is afraid of speaking in front of people.",decoys:["He is good at speaking in public.","He enjoys speaking in front of others.","He refuses to speak in public."]},
+  {no:"Jeg synes det er flaut å innrømme det.",en:"I find it embarrassing to admit it.",decoys:["I'm proud to admit it.","I find it easy to admit it.","I'm afraid to talk about it."]},
+  {no:"Jeg er veldig stolt av det vi oppnådde.",en:"I am very proud of what we achieved.",decoys:["I am very surprised by what we achieved.","I am not satisfied with what we achieved.","I am glad we finally finished."]},
+  {no:"Jeg beklager, det var ikke meningen min.",en:"I'm sorry, it wasn't my intention.",decoys:["I'm sorry, but it was my intention.","I don't care, it wasn't my fault.","I apologize, but I can't help it."]},
+  {no:"Jeg synes det er vanskelig å ta beslutninger.",en:"I find it hard to make decisions.",decoys:["I find it very easy to make decisions.","I don't like making decisions for others.","I never have to make decisions."]},
+  {no:"Det gjør meg sint at ingen lytter.",en:"It makes me angry that nobody listens.",decoys:["It makes me sad that nobody responds.","It worries me that nobody understands.","It surprises me that nobody agrees."]},
+  {no:"Jeg er ikke enig med det du sier.",en:"I don't agree with what you're saying.",decoys:["I agree with everything you say.","I don't understand what you're saying.","I'm not sure what you mean."]},
+
+  // ── SOCIAL & RELATIONSHIPS ──
+  {no:"Vi har vært venner i fem år.",en:"We have been friends for five years.",decoys:["We met five years ago.","We have known each other for about five years.","We became friends five years from now."]},
+  {no:"De to kommer veldig godt overens.",en:"The two of them get along very well.",decoys:["The two of them argue very often.","Both of them are very similar.","The two of them meet very often."]},
+  {no:"Den eldre broren min gir meg veldig gode råd.",en:"My older brother gives me very good advice.",decoys:["My older brother asks me for advice.","My brother always disagrees with me.","My older brother doesn't talk to me much."]},
+  {no:"Vi hadde en ganske alvorlig krangel.",en:"We had a quite serious argument.",decoys:["We had a quite serious conversation.","We had a pretty good discussion.","We avoided having a serious argument."]},
+  {no:"Jeg ba om unnskyldning, men hun tilgav meg ikke.",en:"I apologized but she didn't forgive me.",decoys:["I forgave her but she didn't apologize.","I apologized and she forgave me.","I didn't apologize and she was angry."]},
+  {no:"Vi møttes på en fest for to år siden.",en:"We met at a party two years ago.",decoys:["We met at school two years ago.","We have known each other for two years.","We first spoke two years ago."]},
+  {no:"Jeg stoler helt og fullt på henne.",en:"I trust her completely.",decoys:["I don't trust her at all.","I used to trust her completely.","I have a hard time trusting her."]},
+  {no:"Jeg savner familien min veldig mye.",en:"I miss my family very much.",decoys:["I really love my family.","I rarely see my family.","I talk to my family often."]},
+  {no:"Han er ikke lett å bli kjent med.",en:"He is not easy to get to know.",decoys:["He is a very open person.","He is someone who trusts everyone.","He is hard to understand sometimes."]},
+  {no:"Vi holder kontakten selv om vi bor langt fra hverandre.",en:"We stay in touch even though we live far apart.",decoys:["We rarely speak because we live far apart.","We moved apart but still live nearby.","We lost touch after we moved."]},
+
+  // ── TRAVEL & PLACES ──
+  {no:"Flyturen tar omtrent tre timer.",en:"The flight takes approximately three hours.",decoys:["The flight costs approximately three hundred dollars.","The flight departs in three hours.","The flight was delayed by three hours."]},
+  {no:"Jeg har aldri besøkt noe land i Sør-Amerika.",en:"I have never visited any country in South America.",decoys:["I have already visited most of South America.","I want to visit all of South America.","I have only visited one country in South America."]},
+  {no:"Hvor kan jeg veksle penger i nærheten?",en:"Where can I exchange money nearby?",decoys:["Where can I spend money near here?","Where can I withdraw money near here?","How far is the nearest bank?"]},
+  {no:"Hotellet er ti minutters gange fra stranden.",en:"The hotel is a ten-minute walk from the beach.",decoys:["The hotel is ten minutes from the city center.","The hotel is right on the beach.","The hotel is a ten-minute drive from the beach."]},
+  {no:"Kofferten min ble borte på flyplassen.",en:"My suitcase got lost at the airport.",decoys:["I forgot my suitcase at the airport.","My suitcase was stolen at the airport.","I left my suitcase on the plane."]},
+  {no:"Du må bestille lang tid i forveien.",en:"You have to book well in advance.",decoys:["You have to arrive well in advance.","You can book at the last minute.","You need to confirm your reservation in advance."]},
+  {no:"Jeg gikk meg bort på vei til museet.",en:"I got lost on the way to the museum.",decoys:["I arrived late at the museum.","I couldn't find a taxi to the museum.","I decided not to go to the museum."]},
+  {no:"Landskapet var absolutt imponerende.",en:"The landscape was absolutely impressive.",decoys:["The weather was absolutely terrible.","The hotel was absolutely stunning.","The city was absolutely enormous."]},
+  {no:"Vi tok feil buss og havnet på feil sted.",en:"We took the wrong bus and ended up in the wrong place.",decoys:["We missed the last bus of the day.","We got on the bus just in time.","The bus broke down on the way there."]},
+  {no:"Jeg har alltid drømt om å reise til Norge.",en:"I have always dreamed of traveling to Norway.",decoys:["I have been to Norway several times.","I never wanted to travel to Norway.","I plan to move to Norway someday."]},
+  {no:"Vi bestemte oss for å leie bil.",en:"We decided to rent a car.",decoys:["We decided to take a taxi.","We decided to book a bus.","We needed to fix our car."]},
+
+  // ── FOOD & HEALTH ──
+  {no:"Har du noen matallergier?",en:"Do you have any food allergies?",decoys:["Do you have any dietary preferences?","Are you a vegetarian?","Do you have any health problems?"]},
+  {no:"Jeg har hatt vondt i hodet siden i morges.",en:"I have had a headache since this morning.",decoys:["I have had a cold since this morning.","My stomach has been hurting since last night.","I haven't felt well since this morning."]},
+  {no:"Legen anbefalte meg å hvile noen dager.",en:"The doctor recommended I rest for a few days.",decoys:["The doctor asked me to take some medicine.","The doctor told me to exercise more.","The doctor suggested I see a specialist."]},
+  {no:"Man bør spise mer frukt og grønnsaker.",en:"One should eat more fruit and vegetables.",decoys:["You should eat less sugar and fat.","You need to drink more water.","You should avoid eating so much."]},
+  {no:"Denne retten har altfor mye salt.",en:"This dish has far too much salt.",decoys:["This dish doesn't have enough salt.","This dish is too spicy for me.","This dish is too sweet for my taste."]},
+  {no:"Jeg har ikke vært på treningsstudioet på måneder.",en:"I haven't been to the gym in months.",decoys:["I go to the gym every few months.","I started going to the gym months ago.","I used to go to the gym every month."]},
+  {no:"Du bør drikke mer vann i løpet av dagen.",en:"You should drink more water during the day.",decoys:["You should eat less during the day.","You need to sleep more during the week.","You should rest more during the day."]},
+  {no:"Kan jeg få regningen, takk?",en:"Can I have the bill, please?",decoys:["Can I see the menu, please?","I would like to order dessert, please.","Can I have a glass of water, please?"]},
+  {no:"Jeg er ikke sulten, jeg spiste for ikke lenge siden.",en:"I'm not hungry, I ate not long ago.",decoys:["I'm not hungry because I skipped breakfast.","I already ordered food a little while ago.","I'm still full from last night's dinner."]},
+  {no:"Han sover bare fire timer om natten.",en:"He only sleeps four hours a night.",decoys:["He always sleeps more than eight hours.","He takes a nap for four hours every day.","He needs at least four hours of rest."]},
+
+  // ── SHOPPING & MONEY ──
+  {no:"Kan du gi meg litt rabatt?",en:"Can you give me a little discount?",decoys:["Could you wrap this as a gift?","Could you check the price for me?","Could you exchange this for me?"]},
+  {no:"Jeg glemte lommeboken hjemme.",en:"I forgot my wallet at home.",decoys:["I lost my wallet at the store.","I left my phone at home.","I forgot to bring any cash."]},
+  {no:"Det er for dyrt for budsjettet mitt.",en:"It is too expensive for my budget.",decoys:["It's a bit over my expected price.","It's exactly what I wanted to spend.","It's too cheap to be good quality."]},
+  {no:"Tar dere kredittkort her?",en:"Do you accept credit cards here?",decoys:["Do you accept foreign currency here?","Is there an ATM nearby?","Can I pay in installments?"]},
+  {no:"Jeg vil returnere dette produktet.",en:"I want to return this product.",decoys:["I want to exchange this product.","I want to buy this product.","I want to complain about this product."]},
+  {no:"Jeg leter etter noe billigere.",en:"I am looking for something cheaper.",decoys:["I am looking for something of better quality.","I am looking for something larger.","I am looking for something different."]},
+  {no:"Prisene har gått mye opp i det siste.",en:"Prices have gone up a lot lately.",decoys:["Prices have gone down a lot lately.","Prices haven't changed much lately.","The price is higher than I expected."]},
+  {no:"Jeg har ikke råd til det akkurat nå.",en:"I can't afford it right now.",decoys:["I don't want to spend money right now.","I already bought something like that.","It's not worth the money right now."]},
+
+  // ── NATURE & WEATHER ──
+  {no:"Det ser ut som det kommer til å regne i ettermiddag.",en:"It looks like it's going to rain this afternoon.",decoys:["It looks like it will be sunny this afternoon.","I hope it doesn't rain this afternoon.","It was raining all afternoon."]},
+  {no:"Det er forferdelig kaldt i dag.",en:"It is terribly cold today.",decoys:["It is terribly hot today.","The weather is really nice today.","It was terribly cold yesterday."]},
+  {no:"Elven steg mye på grunn av regnet.",en:"The river rose a lot because of the rain.",decoys:["The river dried up because of the heat.","The river flooded the town last week.","The rain caused a lot of damage."]},
+  {no:"Jeg hadde aldri sett så mye snø i hele mitt liv.",en:"I had never seen so much snow in my entire life.",decoys:["I had never felt so cold in my life.","I didn't expect to see snow here.","I had never been in the snow before."]},
+  {no:"Klimaet her er veldig forskjellig fra hjemlandet mitt.",en:"The climate here is very different from my home country.",decoys:["The weather here is similar to my home country.","I don't like the climate in this country.","The climate is changing in my country too."]},
+  {no:"Det var sterk vind hele natten.",en:"There was strong wind all night.",decoys:["It rained heavily all night.","There was thick fog all night.","There was a thunderstorm all night."]},
+  {no:"Sommeren i Norge er ganske kort.",en:"The summer in Norway is quite short.",decoys:["The winter in Norway is quite mild.","Summers in Norway are extremely hot.","Spring in Norway lasts a very long time."]},
+  {no:"Vi måtte avlyse turen på grunn av dårlig vær.",en:"We had to cancel the trip because of bad weather.",decoys:["We decided to go despite the bad weather.","We postponed the trip until the weather improved.","The bad weather made the trip more exciting."]},
+
+  // ── TECHNOLOGY & COMMUNICATION ──
+  {no:"Jeg har ikke dekning i dette området.",en:"I don't have signal in this area.",decoys:["I don't have internet in this area.","My phone battery is dead.","I can't make calls in this area."]},
+  {no:"Kan du sende meg den filen på e-post?",en:"Can you send me that file by email?",decoys:["Can you upload that file to the cloud?","Can you print that file for me?","Can you save that file somewhere?"]},
+  {no:"Nettsiden fungerer ikke som den skal.",en:"The website isn't working properly.",decoys:["The app doesn't load quickly.","The computer turned off suddenly.","The internet connection is very slow."]},
+  {no:"Telefonen min døde i verste øyeblikk.",en:"My phone died at the worst moment.",decoys:["I lost my phone at the worst moment.","My phone broke at the worst moment.","I forgot my charger at the worst moment."]},
+  {no:"Jeg må oppdatere appen.",en:"I have to update the app.",decoys:["I have to delete the app.","I have to install the app.","I have to restart my phone."]},
+  {no:"Hva er wifi-passordet?",en:"What is the wifi password?",decoys:["Is there wifi available here?","How fast is the wifi here?","Can I connect to your network?"]},
+  {no:"Jeg fikk en melding, men jeg forstår ikke hva den betyr.",en:"I received a message but I don't understand what it means.",decoys:["I sent a message but got no reply.","I missed a call and don't know who it was.","I deleted a message by mistake."]},
+  {no:"Batteriet er nesten tomt.",en:"The battery is almost empty.",decoys:["The charger is not working.","The battery doesn't last long.","The battery is fully charged."]},
+
+  // ── GRAMMAR CHALLENGES ──
+  {no:"Jeg håper alt går bra.",en:"I hope everything goes well.",decoys:["I hope everything turned out well.","I expected everything to go well.","I thought everything went well."]},
+  {no:"Jeg skulle ønske jeg hadde kommet tidligere.",en:"I wish I had come earlier.",decoys:["I hope he comes soon.","I'm glad I came on time.","I wish I could come later."]},
+  {no:"Da jeg var liten, bodde vi på landet.",en:"When I was little, we lived in the countryside.",decoys:["When I was little, I visited the countryside.","When he was young, they moved to the country.","While we were young, we left the countryside."]},
+  {no:"Hvis jeg hadde mer tid, ville jeg reist mer.",en:"If I had more time, I would travel more.",decoys:["If I have more time, I will travel more.","Since I have more time, I travel more.","Because I had more time, I traveled more."]},
+  {no:"Jeg fortalte ham det for at han ikke skulle bekymre seg.",en:"I told him so that he wouldn't worry.",decoys:["I told him but he still worried.","He told me not to worry.","I said it so that he would understand."]},
+  {no:"Selv om det regnet, gikk vi en tur.",en:"Even though it was raining, we went for a walk.",decoys:["Because it was raining, we stayed inside.","We went for a walk before it started raining.","We stopped walking when it started to rain."]},
+  {no:"Jeg ba ham om å forklare det en gang til.",en:"I asked him to explain it one more time.",decoys:["He asked me to explain it again.","I told him I didn't understand.","He offered to explain it another time."]},
+  {no:"Det var ingen hjemme da vi kom.",en:"There was nobody home when we arrived.",decoys:["Nobody came when we arrived.","We arrived before everyone else.","Nobody left when we arrived."]},
+  {no:"Han fortalte meg det uten at jeg spurte.",en:"He told me without me asking.",decoys:["He told me after I asked him.","I asked him and he told me.","He refused to tell me even when I asked."]},
+  {no:"Så snart jeg ankommer, gir jeg deg beskjed.",en:"As soon as I arrive, I'll let you know.",decoys:["Right after I left, I let you know.","I'll let you know before I arrive.","As soon as you arrive, let me know."]},
+  {no:"Du trenger å øve mer.",en:"You need to practice more.",decoys:["It's important that you rest more.","You don't need to practice anymore.","There's no need for you to practice."]},
+  {no:"Til tross for alt fortsatte vi.",en:"Despite everything, we kept going.",decoys:["Because of everything, we stopped.","After everything, we went back.","We kept going until everything was done."]},
+
+  // ── EXPRESSING IDEAS & NUANCE ──
+  {no:"Egentlig bryr jeg meg ikke om hva de tenker.",en:"I actually don't care what they think.",decoys:["I really care about what they think.","In reality, I agree with what they think.","I don't understand what they think."]},
+  {no:"Vi kan komme for sent hvis vi ikke drar nå.",en:"We might arrive late if we don't leave now.",decoys:["We will definitely be late.","We won't be late even if there's traffic.","We should leave early to avoid traffic."]},
+  {no:"Ikke desto mindre må vi ta hensyn til andre faktorer.",en:"Nevertheless, we must take other factors into account.",decoys:["On the other hand, there are no other factors.","Therefore, we only need to consider one factor.","In addition, we should ignore other factors."]},
+  {no:"Det blir stadig vanskeligere å konsentrere seg.",en:"It is becoming harder and harder to concentrate.",decoys:["It used to be harder to concentrate.","It is becoming easier to concentrate.","It is just as hard to concentrate as before."]},
+  {no:"Det er ikke mulig at det er sant.",en:"It is not possible that it is true.",decoys:["There is a chance that could be true.","That is obviously true.","I think that might be true."]},
+  {no:"Det spiller ingen rolle for meg om han kommer eller ikke.",en:"It doesn't matter to me whether he comes or not.",decoys:["I hope he decides whether to come or not.","It bothers me whether he comes or not.","I would like him to come if possible."]},
+  {no:"Jo raskere vi gjør det, jo bedre.",en:"The faster we do it, the better.",decoys:["We should do it as slowly as possible.","The more we do it, the better.","We need to do it at least once."]},
+  {no:"Tilsynelatende visste ingen om det.",en:"Apparently, nobody knew about it.",decoys:["Clearly, everyone was aware.","It seems that someone was aware.","Obviously, they were all informed."]},
+  {no:"Tross alt er vi ansvarlige.",en:"After all, we are responsible.",decoys:["In the end, nobody is responsible.","At first, we were responsible.","Before long, we will be responsible."]},
+  {no:"Etter min mening er det ikke en god idé.",en:"In my opinion, it is not a good idea.",decoys:["I think it's definitely a good idea.","Everyone agrees it's a good idea.","It seems like a reasonable idea to me."]},
+
+  // ── ADVICE, OBLIGATION & PERMISSION ──
+  {no:"Du bør snakke med ham før du tar en beslutning.",en:"You should talk to him before making a decision.",decoys:["You should make a decision before talking to him.","You must let him make the decision.","You shouldn't talk to him about this."]},
+  {no:"Det er ikke tillatt å røyke inne i bygningen.",en:"Smoking is not allowed inside the building.",decoys:["Smoking is only allowed in certain areas.","You can smoke outside the building.","No smoking signs are posted in the building."]},
+  {no:"Jeg anbefaler deg å prøve restauranten på hjørnet.",en:"I recommend you try the restaurant on the corner.",decoys:["I suggest you avoid the restaurant on the corner.","I advise you to book a table in advance.","I've heard the restaurant on the corner is expensive."]},
+  {no:"Skjemaet må leveres inn innen fredag.",en:"The form must be submitted by Friday.",decoys:["The form needs to be collected before Friday.","You can submit the form any day this week.","The form should be ready by next Friday."]},
+  {no:"Det er forbudt å bruke mobiltelefon i timen.",en:"It is forbidden to use a mobile phone in class.",decoys:["Mobile phones must be turned off in class.","Students are encouraged to use phones in class.","Mobile phones may be used during breaks."]},
+  {no:"Det beste ville være å vente til vi har mer informasjon.",en:"The best thing would be to wait until we have more information.",decoys:["The worst thing would be to wait for more information.","We shouldn't wait any longer for information.","We already have enough information to decide."]},
+  {no:"Du er nødt til å være mer forsiktig.",en:"You need to be more careful.",decoys:["You should try harder.","You need to slow down.","You have to be more confident."]},
+
+  // ── STORYTELLING & PAST EVENTS ──
+  {no:"Da jeg fikk vite det, kunne jeg ikke tro det.",en:"When I found out, I couldn't believe it.",decoys:["When he found out, I couldn't believe it.","When I told her, she couldn't believe it.","After I found out, I believed it immediately."]},
+  {no:"De ble satt ut av det da de hørte nyheten.",en:"They were speechless when they heard the news.",decoys:["They were upset when they heard the news.","They were relieved when they heard the news.","They didn't believe the news at first."]},
+  {no:"Alt gikk stikk i strid med hva vi hadde forventet.",en:"Everything went completely against what we had expected.",decoys:["Everything turned out exactly as we expected.","Nothing turned out the way we had planned.","Things went much better than expected."]},
+  {no:"Plutselig begynte det å regne kraftig.",en:"Suddenly it started raining heavily.",decoys:["Gradually, it started to rain.","Suddenly, the rain stopped.","Before long, it started to snow."]},
+  {no:"Jeg hadde akkurat sovnet da telefonen ringte.",en:"I had just fallen asleep when the phone rang.",decoys:["I woke up when the phone rang.","I was about to fall asleep when he called.","The phone rang before I went to sleep."]},
+  {no:"Jeg la ikke merke til hva som skjedde.",en:"I didn't notice what was happening.",decoys:["I immediately realized what was happening.","I knew exactly what was happening.","I tried to understand what was happening."]},
+  {no:"Vi kom akkurat i tide til å rekke toget.",en:"We arrived just in time to catch the train.",decoys:["We missed the train by just a few minutes.","We arrived early enough to take the train.","We took the last train of the night."]},
+  {no:"Det tok henne lang tid å komme over det som skjedde.",en:"It took her a long time to get over what happened.",decoys:["She got over what happened very quickly.","It was hard for her to understand what happened.","She never talked about what had happened."]},
+
+  // ── EXPRESSING CHANGE & PROGRESS ──
+  {no:"Han har forandret seg mye siden sist jeg så ham.",en:"He has changed a lot since I last saw him.",decoys:["He changed a lot before the last time I saw him.","He hasn't changed at all since I last saw him.","I noticed he had changed when I saw him."]},
+  {no:"Stadig flere jobber hjemmefra.",en:"More and more people are working from home.",decoys:["Fewer and fewer people are working from home.","Everyone is starting to work from home.","Working from home is becoming less common."]},
+  {no:"Sakte, men sikkert begynner jeg å venne meg til det.",en:"Slowly but surely I am getting used to it.",decoys:["I got used to it very quickly.","I still can't get used to it.","Suddenly I got used to everything."]},
+  {no:"Med tiden blir alt bedre.",en:"With time, everything gets better.",decoys:["With time, everything gets worse.","Only some things improve with time.","There is no time to improve things."]},
+  {no:"Siden han flyttet, har han vært mye gladere.",en:"Since he moved, he has been much happier.",decoys:["Before he moved, he was much happier.","He moved because he wasn't happy.","He hasn't been happy since he moved."]},
+  {no:"Norsk har blitt lettere å forstå etter hvert.",en:"Norwegian has become easier to understand over time.",decoys:["Norwegian is just as difficult as it was before.","Norwegian has become harder to understand.","I understand less Norwegian than I used to."]},
+
+  // ── NUMBERS, QUANTITIES & COMPARISONS ──
+  {no:"Det er færre enn ti personer på listen.",en:"There are fewer than ten people on the list.",decoys:["There are more than ten people on the list.","There are exactly ten people on the list.","There are at least ten people on the list."]},
+  {no:"Det koster dobbelt så mye som jeg trodde.",en:"It costs twice as much as I thought.",decoys:["It costs half as much as I thought.","It costs more than I expected.","It costs exactly what I thought."]},
+  {no:"Jo mer du øver, jo bedre blir du.",en:"The more you practice, the better you get.",decoys:["If you practice more, you will earn more.","You learn more when you practice less.","Practicing a lot is not always helpful."]},
+  {no:"De fleste studentene besto eksamen.",en:"Most of the students passed the exam.",decoys:["All of the students passed.","A few of the students passed.","None of the students passed."]},
+  {no:"Det er mye bedre enn jeg hadde forventet.",en:"It is much better than I had expected.",decoys:["It is much worse than I expected.","It is about as good as I expected.","It is not as good as I had hoped."]},
+  {no:"Det er nesten det dobbelte av hva det var i fjor.",en:"It is almost double what it was last year.",decoys:["It is exactly the same as last year.","It has barely changed since last year.","It is less than half of what it was last year."]},
+
+  // ── REQUESTS, OFFERS & INVITATIONS ──
+  {no:"Kan du skru ned volumet litt?",en:"Can you turn down the volume a bit?",decoys:["Could you turn the volume up a bit?","Would you like to listen to music?","Can you turn off the TV, please?"]},
+  {no:"Hva om vi går ut og tar noe i kveld?",en:"What if we go out for a drink tonight?",decoys:["Why don't we stay in tonight?","What do you want to do this evening?","Shall we cook dinner together tonight?"]},
+  {no:"Kan jeg by deg på noe å drikke?",en:"Can I offer you something to drink?",decoys:["Can I get you something to eat?","Would you like to sit down?","Can I help you with something?"]},
+  {no:"Jeg vil gjerne stille deg et spørsmål.",en:"I would like to ask you a question.",decoys:["I would like to answer your question.","I need to tell you something important.","I would like to give you some advice."]},
+  {no:"Kan du forklare meg hvordan det fungerer?",en:"Can you explain to me how it works?",decoys:["Could you show me where it is?","Could you tell me how much it costs?","Could you help me fix it?"]},
+  {no:"Jeg inviterer deg på middag i kveld.",en:"I'm inviting you to dinner tonight.",decoys:["I'm cooking dinner for myself tonight.","I would like to join you for dinner.","I'm reserving a table for tonight."]},
+  {no:"Har du lyst til å bli med?",en:"Do you feel like joining us?",decoys:["Do you have to come with us?","Can you come if you want to?","Would you rather stay behind?"]},
+
+  // ── EXPRESSING DOUBT, UNCERTAINTY & POSSIBILITY ──
+  {no:"Jeg er ikke sikker på at det er den beste ideen.",en:"I'm not sure that's the best idea.",decoys:["I'm sure that's the best idea.","I don't think it's a bad idea.","I agree that it's not a good idea."]},
+  {no:"Vi kan komme for sent hvis det er mye trafikk.",en:"We might arrive late if there is a lot of traffic.",decoys:["We will definitely arrive late.","We won't arrive late even if there's traffic.","We should leave early to avoid traffic."]},
+  {no:"Jeg vet ikke om jeg kan komme på møtet.",en:"I don't know if I will be able to come to the meeting.",decoys:["I know I won't be able to attend.","I'm not sure when the meeting is.","I might need to cancel the meeting."]},
+  {no:"Det er mulig at jeg tok feil.",en:"It's possible that I was wrong.",decoys:["It's impossible that I made a mistake.","I know I wasn't wrong.","Someone else must have made a mistake."]},
+  {no:"Kanskje vi bør vente litt lenger.",en:"Perhaps we should wait a little longer.",decoys:["We definitely shouldn't wait any longer.","We have already waited too long.","I don't think we need to wait."]},
+  {no:"Jeg er ikke helt sikker på hva jeg skal gjøre.",en:"I'm not entirely sure what to do.",decoys:["I know exactly what needs to be done.","I've already decided what to do.","I don't think there is anything to do."]},
+
+  // ── NORWEGIAN CULTURAL & IDIOMATIC ──
+  {no:"Den som tier samtykker.",en:"Silence means consent.",decoys:["Actions speak louder than words.","Those who keep quiet know the most.","Silence is golden in all situations."]},
+  {no:"Det er ikke gull alt som glimrer.",en:"All that glitters is not gold.",decoys:["Gold is the most valuable metal.","Appearances can be very deceiving.","You should never judge by appearances."]},
+  {no:"Bedre sent enn aldri.",en:"Better late than never.",decoys:["It's better to be on time than late.","Never do today what you can do tomorrow.","Late arrivals are never welcome."]},
+  {no:"Tiden leger alle sår.",en:"Time heals all wounds.",decoys:["Nothing lasts forever.","Everything changes with time.","Time flies when you're having fun."]},
+  {no:"Morgenstund har gull i munn.",en:"The early bird catches the worm.",decoys:["Those who sleep late miss their chances.","God helps those who wake up early.","It's better to rest before working hard."]},
+  {no:"Mange bekker små gjør en stor å.",en:"Many a little makes a mickle.",decoys:["A river is made of many small streams.","Small problems grow into big ones.","Every small effort counts in the end."]},
+  {no:"Det er ikke så ille som det ser ut.",en:"It is not as bad as it looks.",decoys:["It is exactly as bad as it looks.","It looks worse than it really is.","Things are always worse than they seem."]},
+
+  // ── DESCRIBING PEOPLE & SITUATIONS ──
+  {no:"Han er en person det er vanskelig å tilfredsstille.",en:"He is a person who is hard to satisfy.",decoys:["He is a very easy person to get along with.","She is someone who complains all the time.","He is a difficult person to understand."]},
+  {no:"Hun har veldig god hukommelse for navn.",en:"She has a very good memory for names.",decoys:["She always forgets people's names.","She has a good memory for faces.","He is very good at remembering dates."]},
+  {no:"Det er tydelig at han jobber hardt.",en:"It is clear that he works hard.",decoys:["You can tell she is very tired.","It's obvious he doesn't like his job.","It seems he doesn't work very hard."]},
+  {no:"Han er den typen person man kan stole på.",en:"He is the type of person you can rely on.",decoys:["He is the type of person who is hard to trust.","She is a person who trusts everyone.","He is someone I used to rely on."]},
+  {no:"Hun synes det er vanskelig å uttrykke følelsene sine.",en:"She finds it hard to express her feelings.",decoys:["She expresses her emotions very easily.","He refuses to talk about his feelings.","She doesn't understand her own emotions."]},
+  {no:"Det er en situasjon som er veldig vanskelig å forklare.",en:"It is a situation that is very hard to explain.",decoys:["It's a very easy situation to understand.","It's a complicated situation but easy to solve.","It's a situation that explains itself."]},
+
+  // ── MIXED INTERMEDIATE CHALLENGES ──
+  {no:"Noe må gjøres før det er for sent.",en:"Something must be done before it's too late.",decoys:["It's already too late to do anything.","We did something just in time.","There's nothing we can do about it."]},
+  {no:"Det er ikke verdt å bekymre seg for det.",en:"It's not worth worrying about that.",decoys:["You definitely should worry about that.","It's worth thinking carefully about that.","There's nothing to worry about here."]},
+  {no:"Jeg har lyst til å begynne på noe nytt.",en:"I feel like starting something new.",decoys:["I'm tired of starting new things.","I need to finish what I already started.","I want to go back to what I was doing."]},
+  {no:"Med alt som har skjedd, er jeg ikke overrasket.",en:"Given everything that has happened, I'm not surprised.",decoys:["Despite everything that happened, I'm shocked.","Because of what happened, I'm very surprised.","After everything, I still can't believe it."]},
+  {no:"Nå burde han allerede vite det.",en:"By now he should already know it.",decoys:["By now it's too late for him to know.","He knew it a long time ago.","He will never know it."]},
+  {no:"Vi fikk endelig det vi ville ha.",en:"We finally got what we wanted.",decoys:["We gave up on what we wanted.","We almost got what we wanted.","We didn't get what we wanted in the end."]},
+  {no:"Jeg synes det er umulig å konsentrere meg med så mye støy.",en:"I find it impossible to concentrate with so much noise.",decoys:["I don't mind concentrating with noise around.","I can concentrate better with some background noise.","The noise doesn't bother me that much."]},
+  {no:"Det har ingenting med det vi snakker om å gjøre.",en:"That has nothing to do with what we are talking about.",decoys:["That is exactly what we are talking about.","That is related to what we were discussing.","That has a lot to do with our conversation."]},
+  {no:"Jeg visste ikke hva jeg skulle si.",en:"I didn't know what to say.",decoys:["I said exactly what I meant.","I knew right away what to say.","I couldn't stop talking."]},
+  {no:"Det er ikke alltid lett å gjøre det rette.",en:"It is not always easy to do the right thing.",decoys:["It is always easy to know what is right.","Doing the right thing is usually simple.","It is easy to do the right thing if you try."]},
+  {no:"Jeg angrer på at jeg ikke sa noe.",en:"I regret not saying anything.",decoys:["I'm glad I didn't say anything.","I said something but now I regret it.","I didn't regret staying silent."]},
+  {no:"Han lot som ingenting hadde skjedd.",en:"He acted as if nothing had happened.",decoys:["He admitted that something had happened.","He explained what had happened.","He refused to talk about what had happened."]},
+  {no:"Det er viktig å tenke på konsekvensene.",en:"It is important to think about the consequences.",decoys:["It is not necessary to consider the consequences.","We should ignore the consequences for now.","The consequences are not important here."]},
+  {no:"Jeg er ikke vant til å be om hjelp.",en:"I am not used to asking for help.",decoys:["I always ask for help when I need it.","I am used to helping others.","I find it easy to ask for help."]},
+  {no:"Alt i alt var det en god opplevelse.",en:"All in all, it was a good experience.",decoys:["In the end, it was a disappointing experience.","Overall, it was a difficult experience.","Despite everything, it was a bad experience."]},
+];
+
+let audioCtx=null;
+function unlockAudio(){
+  if(audioCtx)return;
+  audioCtx=new(window.AudioContext||window.webkitAudioContext)();
+  const buf=audioCtx.createBuffer(1,1,22050);
+  const src=audioCtx.createBufferSource();
+  src.buffer=buf;src.connect(audioCtx.destination);src.start(0);
+}
+function playTone(type){
+  if(!audioCtx)return;
+  if(audioCtx.state==='suspended')audioCtx.resume();
+  const ctx=audioCtx,now=ctx.currentTime;
+  if(type==='correct'){
+    [523.25,659.25,783.99].forEach((freq,i)=>{
+      const o=ctx.createOscillator(),g=ctx.createGain();
+      o.connect(g);g.connect(ctx.destination);
+      o.type='sine';
+      o.frequency.setValueAtTime(freq,now+i*0.12);
+      g.gain.setValueAtTime(0.28,now+i*0.12);
+      g.gain.exponentialRampToValueAtTime(0.001,now+i*0.12+0.35);
+      o.start(now+i*0.12);o.stop(now+i*0.12+0.4);
+    });
+  }else{
+    const o=ctx.createOscillator(),g=ctx.createGain();
+    o.connect(g);g.connect(ctx.destination);
+    o.type='sawtooth';
+    o.frequency.setValueAtTime(300,now);
+    o.frequency.exponentialRampToValueAtTime(160,now+0.4);
+    g.gain.setValueAtTime(0.18,now);
+    g.gain.exponentialRampToValueAtTime(0.001,now+0.5);
+    o.start(now);o.stop(now+0.55);
+  }
+}
+let voices=[];
+function loadVoices(){voices=window.speechSynthesis?speechSynthesis.getVoices():[];}
+function speakNorwegian(text){
+  if(!window.speechSynthesis)return;
+  speechSynthesis.cancel();
+  const u=new SpeechSynthesisUtterance(text);
+  u.lang='nb-NO';u.rate=0.85;u.pitch=1.0;
+  if(!voices.length)loadVoices();
+  const v=voices.find(v=>v.lang==='nb-NO'||v.lang==='no-NO'||v.lang==='nn-NO')
+         ||voices.find(v=>v.lang.startsWith('nb')||v.lang.startsWith('no'));
+  if(v)u.voice=v;
+  speechSynthesis.speak(u);
+}
+let questions=[],current=0,score=0,answered=false;
+function shuffle(a){
+  a=[...a];
+  for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];}
+  return a;
+}
+document.getElementById('start-btn').addEventListener('click',()=>{
+  unlockAudio();loadVoices();
+  document.getElementById('splash-screen').style.display='none';
+  document.getElementById('quiz-screen').style.display='block';
+  initQuiz();
+});
+function initQuiz(){
+  questions=shuffle(sentenceBank).slice(0,20);
+  current=0;score=0;answered=false;
+  buildDots();loadQuestion();
+}
+function restartQuiz(){
+  document.getElementById('results-screen').style.display='none';
+  document.getElementById('quiz-screen').style.display='block';
+  initQuiz();
+}
+function buildDots(){
+  const row=document.getElementById('dots-row');row.innerHTML='';
+  for(let i=0;i<20;i++){const d=document.createElement('div');d.className='dot';d.id='dot-'+i;row.appendChild(d);}
+}
+function loadQuestion(){
+  answered=false;
+  const q=questions[current];
+  document.getElementById('progress-bar').style.width=(current/20*100)+'%';
+  document.getElementById('progress-label').textContent=current+' / 20';
+  document.getElementById('score-display').textContent=score;
+  document.getElementById('sentence-number').textContent='Sentence '+(current+1);
+  document.getElementById('norsk-sentence').textContent=q.no;
+  document.getElementById('sentence-card').className='sentence-card';
+  const fb=document.getElementById('feedback');fb.textContent='';fb.className='feedback';
+  const choices=shuffle([q.en,...q.decoys]);
+  const el=document.getElementById('choices');el.innerHTML='';
+  choices.forEach(c=>{
+    const b=document.createElement('button');
+    b.className='choice-btn';b.textContent=c;
+    b.addEventListener('click',()=>handleAnswer(c,q.en,b));
+    el.appendChild(b);
+  });
+  document.getElementById('next-btn').className='next-btn';
+  setTimeout(()=>speakNorwegian(q.no),350);
+}
+function handleAnswer(chosen,correct,btn){
+  if(answered)return;answered=true;
+  const ok=chosen===correct;
+  const card=document.getElementById('sentence-card');
+  const fb=document.getElementById('feedback');
+  const nb=document.getElementById('next-btn');
+  document.querySelectorAll('.choice-btn').forEach(b=>{
+    b.disabled=true;
+    if(b.textContent===correct)b.classList.add('correct');
+  });
+  if(ok){
+    score++;btn.classList.add('correct');
+    card.classList.add('correct','pulse-correct');
+    fb.textContent='✓ Correct! Bra jobbet!';fb.className='feedback show-correct';
+  }else{
+    btn.classList.add('wrong');card.classList.add('wrong','shake');
+    fb.textContent='✗ Incorrect. The answer is shown in green.';fb.className='feedback show-wrong';
+    setTimeout(()=>card.classList.remove('shake'),400);
+  }
+  playTone(ok?'correct':'wrong');
+  const dot=document.getElementById('dot-'+current);
+  if(dot)dot.className='dot '+(ok?'correct':'wrong');
+  document.getElementById('score-display').textContent=score;
+  nb.className='next-btn visible';
+  nb.textContent=current===19?'See Results →':'Next sentence →';
+}
+document.getElementById('next-btn').addEventListener('click',()=>{
+  current++;current>=20?showResults():loadQuestion();
+});
+document.getElementById('speak-btn').addEventListener('click',()=>{
+  const s=document.getElementById('norsk-sentence').textContent;
+  if(s&&s!=='—')speakNorwegian(s);
+});
+function showResults(){
+  document.getElementById('quiz-screen').style.display='none';
+  document.getElementById('results-screen').style.display='block';
+  const champ=score>=17;
+  document.getElementById('results-emoji').textContent=champ?'🏆':score>=12?'💪':'📚';
+  const t=document.getElementById('results-title');
+  t.textContent=champ?'Mester!':score>=12?'Bra jobbet!':'Fortsett å øve!';
+  t.className='results-title'+(champ?' results-champ':'');
+  const msg=champ?"Outstanding! You're a true Norwegian champion 🌟":score>=12?"Solid work — keep building on this!":"Keep studying — you'll get there!";
+  document.getElementById('results-score').innerHTML='You got <strong>'+score+' / 20</strong> correct.<br><small style="color:var(--muted)">'+msg+'</small>';
+}
+if(window.speechSynthesis){speechSynthesis.onvoiceschanged=loadVoices;loadVoices();}
+</script>
+</body>
+</html>

@@ -1,0 +1,580 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>Русский — Russian Quiz</title>
+<link href="https://fonts.googleapis.com/css2?family=Unbounded:wght@700;900&family=Inter:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg:#0a0f1e;--card:#111827;--border:#1e2d45;
+    --accent:#d4293b;--accent2:#4a90d9;--correct:#4be87e;--wrong:#e84b4b;
+    --text:#e8edf5;--muted:#6b7a94;--radius:12px;
+  }
+  *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
+  body{background:var(--bg);color:var(--text);font-family:'Inter',sans-serif;min-height:100vh;min-height:-webkit-fill-available;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:20px;overflow-x:hidden;}
+  body::before{content:'';position:fixed;inset:0;background:
+    radial-gradient(ellipse 70% 50% at 15% 15%,rgba(212,41,59,0.08) 0%,transparent 55%),
+    radial-gradient(ellipse 60% 50% at 85% 80%,rgba(74,144,217,0.07) 0%,transparent 55%);
+    pointer-events:none;z-index:0;}
+  .container{position:relative;z-index:1;width:100%;max-width:560px;}
+
+  /* SPLASH */
+  #splash-screen{text-align:center;padding:20px;}
+  .splash-logo{font-family:'Unbounded',sans-serif;font-size:clamp(2.6rem,9vw,4rem);font-weight:900;letter-spacing:-2px;line-height:1;margin-bottom:6px;}
+  .splash-logo .r{color:var(--accent);}
+  .splash-logo .u{color:var(--accent2);}
+  .splash-cyrillic{font-family:'Unbounded',sans-serif;font-size:1rem;color:var(--muted);letter-spacing:0.2em;margin-bottom:32px;}
+  .splash-features{list-style:none;text-align:left;display:inline-flex;flex-direction:column;gap:14px;margin-bottom:38px;background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:22px 26px;width:100%;max-width:380px;}
+  .splash-features li{display:flex;align-items:center;gap:12px;font-size:0.93rem;color:var(--text);}
+  .splash-features li .icon{font-size:1.3rem;width:28px;flex-shrink:0;text-align:center;}
+  .start-btn{background:var(--accent);color:#fff;border:none;border-radius:var(--radius);font-family:'Inter',sans-serif;font-size:1.05rem;font-weight:500;padding:18px 56px;cursor:pointer;letter-spacing:0.03em;display:inline-block;}
+  .start-btn:active{transform:scale(0.96);background:#b82030;}
+  .splash-note{color:var(--muted);font-size:0.74rem;margin-top:14px;}
+
+  /* HEADER */
+  header{text-align:center;margin-bottom:24px;}
+  .logo{font-family:'Unbounded',sans-serif;font-size:clamp(1.8rem,5vw,2.4rem);font-weight:900;letter-spacing:-1px;}
+  .logo .r{color:var(--accent);}
+  .logo .u{color:var(--accent2);}
+  .subtitle{color:var(--muted);font-size:0.72rem;letter-spacing:0.16em;text-transform:uppercase;margin-top:4px;}
+
+  /* PROGRESS */
+  .progress-row{display:flex;align-items:center;gap:10px;margin-bottom:16px;}
+  .progress-bar-wrap{flex:1;height:4px;background:var(--border);border-radius:99px;overflow:hidden;}
+  .progress-bar-fill{height:100%;background:linear-gradient(90deg,var(--accent),var(--accent2));border-radius:99px;transition:width 0.5s cubic-bezier(.4,0,.2,1);}
+  .progress-label{font-size:0.72rem;color:var(--muted);white-space:nowrap;}
+  .score-badge{background:var(--card);border:1px solid var(--border);border-radius:99px;padding:4px 12px;font-size:0.78rem;font-weight:500;color:var(--accent2);white-space:nowrap;}
+
+  /* WORD CARD */
+  .word-card{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:34px 24px 24px;margin-bottom:14px;text-align:center;position:relative;transition:border-color 0.3s;}
+  .word-card.correct{border-color:var(--correct);}
+  .word-card.wrong{border-color:var(--wrong);}
+  .word-number{position:absolute;top:12px;left:16px;font-size:0.65rem;color:var(--muted);letter-spacing:0.1em;text-transform:uppercase;}
+  .speak-btn{position:absolute;top:10px;right:14px;background:none;border:1px solid var(--border);border-radius:99px;color:var(--accent2);font-size:1rem;cursor:pointer;padding:4px 10px;line-height:1.5;}
+  .speak-btn:active{background:rgba(74,144,217,0.15);border-color:var(--accent2);}
+  .russian-word{font-family:'Unbounded',sans-serif;font-size:clamp(1.6rem,6vw,2.6rem);font-weight:700;letter-spacing:-0.5px;margin:10px 0 6px;line-height:1.15;}
+  .word-hint{font-size:0.72rem;color:var(--muted);letter-spacing:0.1em;text-transform:uppercase;}
+
+  /* CHOICES */
+  .choices{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin-bottom:12px;}
+  .choice-btn{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);color:var(--text);font-family:'Inter',sans-serif;font-size:0.88rem;font-weight:400;padding:16px 10px;cursor:pointer;text-align:center;line-height:1.3;}
+  .choice-btn:active:not(:disabled){background:rgba(74,144,217,0.08);border-color:var(--accent2);transform:scale(0.97);}
+  .choice-btn.correct{background:rgba(75,232,126,0.12);border-color:var(--correct);color:var(--correct);font-weight:500;}
+  .choice-btn.wrong{background:rgba(232,75,75,0.12);border-color:var(--wrong);color:var(--wrong);font-weight:500;}
+  .choice-btn:disabled{cursor:default;}
+
+  /* FEEDBACK */
+  .feedback{min-height:34px;text-align:center;font-size:0.87rem;color:var(--muted);margin-bottom:10px;}
+  .feedback.show-correct{color:var(--correct);font-weight:500;}
+  .feedback.show-wrong{color:var(--wrong);font-weight:500;}
+
+  /* NEXT */
+  .next-btn{width:100%;background:var(--accent);color:#fff;border:none;border-radius:var(--radius);font-family:'Inter',sans-serif;font-size:0.95rem;font-weight:500;padding:16px;cursor:pointer;display:none;}
+  .next-btn:active{background:#b82030;transform:scale(0.98);}
+  .next-btn.visible{display:block;}
+
+  /* DOTS */
+  .dots-row{display:flex;gap:5px;flex-wrap:wrap;justify-content:center;margin-top:12px;}
+  .dot{width:10px;height:10px;border-radius:50%;background:var(--border);transition:background 0.3s;}
+  .dot.correct{background:var(--correct);}
+  .dot.wrong{background:var(--wrong);}
+
+  /* RESULTS */
+  #results-screen{display:none;text-align:center;padding:30px 20px;}
+  .results-emoji{font-size:5rem;margin-bottom:14px;animation:pop 0.5s cubic-bezier(.4,0,.2,1);}
+  @keyframes pop{0%{transform:scale(0.3);opacity:0;}70%{transform:scale(1.15);}100%{transform:scale(1);opacity:1;}}
+  .results-title{font-family:'Unbounded',sans-serif;font-size:2rem;font-weight:900;margin-bottom:8px;letter-spacing:-1px;}
+  .results-champ{color:var(--accent);}
+  .results-score{font-size:1.05rem;color:var(--muted);margin-bottom:28px;line-height:1.8;}
+  .results-score strong{color:var(--text);font-size:1.4rem;}
+  .restart-btn{background:var(--accent);color:#fff;border:none;border-radius:var(--radius);font-family:'Inter',sans-serif;font-size:1rem;font-weight:500;padding:16px 40px;cursor:pointer;}
+  .restart-btn:active{background:#b82030;}
+
+  @keyframes shake{0%,100%{transform:translateX(0)}20%{transform:translateX(-6px)}40%{transform:translateX(6px)}60%{transform:translateX(-4px)}80%{transform:translateX(4px)}}
+  .shake{animation:shake 0.35s ease;}
+  @keyframes pulse-correct{0%{box-shadow:0 0 0 0 rgba(75,232,126,0.4)}70%{box-shadow:0 0 0 12px rgba(75,232,126,0)}100%{box-shadow:0 0 0 0 rgba(75,232,126,0)}}
+  .pulse-correct{animation:pulse-correct 0.5s ease;}
+</style>
+</head>
+<body>
+<div class="container">
+
+  <!-- SPLASH -->
+  <div id="splash-screen">
+    <div class="splash-logo"><span class="r">Р</span><span class="u">у</span>сский</div>
+    <div class="splash-cyrillic">INTERMEDIATE VOCABULARY QUIZ</div>
+    <ul class="splash-features">
+      <li><span class="icon">🇷🇺</span> 300 intermediate Russian words</li>
+      <li><span class="icon">🔊</span> Spoken aloud in Russian</li>
+      <li><span class="icon">🎵</span> Sound feedback on every answer</li>
+      <li><span class="icon">🏆</span> Score 17+ out of 20 and earn Чемпион!</li>
+    </ul>
+    <button class="start-btn" id="start-btn">Начать! &nbsp;→</button>
+    <div class="splash-note">Tap to unlock audio &amp; begin</div>
+  </div>
+
+  <!-- QUIZ -->
+  <div id="quiz-screen" style="display:none">
+    <header>
+      <div class="logo"><span class="r">Р</span><span class="u">у</span>сский</div>
+      <div class="subtitle">Intermediate Vocabulary Quiz</div>
+    </header>
+    <div class="progress-row">
+      <div class="progress-bar-wrap"><div class="progress-bar-fill" id="progress-bar" style="width:0%"></div></div>
+      <div class="progress-label" id="progress-label">0 / 20</div>
+      <div class="score-badge">⭐ <span id="score-display">0</span></div>
+    </div>
+    <div class="word-card" id="word-card">
+      <div class="word-number" id="word-number">Word 1</div>
+      <button class="speak-btn" id="speak-btn">🔊</button>
+      <div class="russian-word" id="russian-word">—</div>
+      <div class="word-hint" id="word-hint">Russian → English</div>
+    </div>
+    <div class="choices" id="choices"></div>
+    <div class="feedback" id="feedback"></div>
+    <button class="next-btn" id="next-btn">Next word →</button>
+    <div class="dots-row" id="dots-row"></div>
+  </div>
+
+  <!-- RESULTS -->
+  <div id="results-screen">
+    <div class="results-emoji" id="results-emoji">🎉</div>
+    <div class="results-title" id="results-title">Чемпион!</div>
+    <div class="results-score" id="results-score"></div>
+    <button class="restart-btn" onclick="restartQuiz()">Play Again</button>
+  </div>
+
+</div>
+<script>
+const wordBank = [
+  // ── VERBS – DAILY LIFE ──
+  {ru:"завтракать",en:"to have breakfast",hint:"verb",decoys:["to have lunch","to have dinner","to snack"]},
+  {ru:"обедать",en:"to have lunch",hint:"verb",decoys:["to have breakfast","to have dinner","to fast"]},
+  {ru:"ужинать",en:"to have dinner",hint:"verb",decoys:["to have lunch","to have breakfast","to overeat"]},
+  {ru:"просыпаться",en:"to wake up",hint:"verb",decoys:["to fall asleep","to lie down","to dream"]},
+  {ru:"одеваться",en:"to get dressed",hint:"verb",decoys:["to undress","to wash up","to shave"]},
+  {ru:"опаздывать",en:"to be late",hint:"verb",decoys:["to arrive early","to hurry","to wait"]},
+  {ru:"торопиться",en:"to hurry",hint:"verb",decoys:["to slow down","to wait","to relax"]},
+  {ru:"убирать",en:"to clean up / to tidy",hint:"verb",decoys:["to decorate","to rearrange","to repair"]},
+  {ru:"стирать",en:"to do laundry / to wash",hint:"verb",decoys:["to iron","to dry","to fold"]},
+  {ru:"гладить",en:"to iron / to stroke",hint:"verb",decoys:["to wash","to fold","to hang"]},
+  {ru:"готовить",en:"to cook / to prepare",hint:"verb",decoys:["to bake only","to fry only","to serve"]},
+  {ru:"заказывать",en:"to order",hint:"verb",decoys:["to cancel","to pay","to deliver"]},
+  {ru:"платить",en:"to pay",hint:"verb",decoys:["to borrow","to owe","to earn"]},
+  {ru:"тратить",en:"to spend (money/time)",hint:"verb",decoys:["to save","to earn","to waste"]},
+  {ru:"копить",en:"to save up / to accumulate",hint:"verb",decoys:["to spend","to borrow","to donate"]},
+  {ru:"занимать",en:"to borrow / to occupy",hint:"verb",decoys:["to lend","to save","to share"]},
+  {ru:"одалживать",en:"to lend",hint:"verb",decoys:["to borrow","to steal","to give away"]},
+  {ru:"искать",en:"to look for / to search",hint:"verb",decoys:["to find","to hide","to lose"]},
+  {ru:"находить",en:"to find",hint:"verb",decoys:["to lose","to hide","to search"]},
+  {ru:"терять",en:"to lose",hint:"verb",decoys:["to find","to keep","to save"]},
+  {ru:"забывать",en:"to forget",hint:"verb",decoys:["to remember","to remind","to record"]},
+  {ru:"вспоминать",en:"to remember / to recall",hint:"verb",decoys:["to forget","to imagine","to dream"]},
+  {ru:"объяснять",en:"to explain",hint:"verb",decoys:["to describe","to translate","to repeat"]},
+  {ru:"переводить",en:"to translate / to transfer",hint:"verb",decoys:["to read","to write","to speak"]},
+  {ru:"советовать",en:"to advise",hint:"verb",decoys:["to warn","to order","to permit"]},
+  {ru:"разрешать",en:"to allow / to permit",hint:"verb",decoys:["to forbid","to force","to suggest"]},
+  {ru:"запрещать",en:"to forbid / to prohibit",hint:"verb",decoys:["to allow","to suggest","to require"]},
+  {ru:"отказываться",en:"to refuse / to decline",hint:"verb",decoys:["to accept","to agree","to offer"]},
+  {ru:"соглашаться",en:"to agree",hint:"verb",decoys:["to disagree","to refuse","to argue"]},
+  {ru:"спорить",en:"to argue / to debate",hint:"verb",decoys:["to agree","to discuss","to complain"]},
+  {ru:"жаловаться",en:"to complain",hint:"verb",decoys:["to praise","to explain","to ask"]},
+  {ru:"хвалить",en:"to praise",hint:"verb",decoys:["to criticize","to ignore","to blame"]},
+  {ru:"критиковать",en:"to criticize",hint:"verb",decoys:["to praise","to accept","to defend"]},
+  {ru:"обсуждать",en:"to discuss",hint:"verb",decoys:["to argue","to decide","to ignore"]},
+  {ru:"признавать",en:"to admit / to recognize",hint:"verb",decoys:["to deny","to hide","to forget"]},
+
+  // ── VERBS – EMOTIONS & MENTAL STATES ──
+  {ru:"радоваться",en:"to rejoice / to be glad",hint:"verb",decoys:["to grieve","to worry","to complain"]},
+  {ru:"грустить",en:"to feel sad",hint:"verb",decoys:["to rejoice","to worry","to get angry"]},
+  {ru:"злиться",en:"to get angry",hint:"verb",decoys:["to calm down","to feel sad","to get scared"]},
+  {ru:"бояться",en:"to be afraid / to fear",hint:"verb",decoys:["to be brave","to ignore","to dare"]},
+  {ru:"стесняться",en:"to feel shy / to be embarrassed",hint:"verb",decoys:["to feel confident","to feel proud","to feel bored"]},
+  {ru:"гордиться",en:"to be proud",hint:"verb",decoys:["to be ashamed","to be jealous","to be modest"]},
+  {ru:"завидовать",en:"to envy",hint:"verb",decoys:["to admire","to respect","to support"]},
+  {ru:"обижаться",en:"to take offense / to feel hurt",hint:"verb",decoys:["to forgive","to ignore","to understand"]},
+  {ru:"прощать",en:"to forgive",hint:"verb",decoys:["to punish","to blame","to accuse"]},
+  {ru:"сожалеть",en:"to regret / to be sorry",hint:"verb",decoys:["to celebrate","to forget","to accept"]},
+  {ru:"беспокоиться",en:"to worry",hint:"verb",decoys:["to relax","to calm down","to sleep well"]},
+  {ru:"успокаиваться",en:"to calm down",hint:"verb",decoys:["to get anxious","to panic","to worry"]},
+  {ru:"надеяться",en:"to hope",hint:"verb",decoys:["to despair","to expect","to wish"]},
+  {ru:"доверять",en:"to trust",hint:"verb",decoys:["to distrust","to suspect","to fear"]},
+  {ru:"подозревать",en:"to suspect",hint:"verb",decoys:["to trust","to confirm","to know"]},
+  {ru:"восхищаться",en:"to admire / to be in awe",hint:"verb",decoys:["to criticize","to ignore","to tolerate"]},
+  {ru:"стыдиться",en:"to feel ashamed",hint:"verb",decoys:["to feel proud","to feel curious","to feel relieved"]},
+  {ru:"скучать",en:"to be bored / to miss someone",hint:"verb",decoys:["to enjoy","to laugh","to entertain"]},
+  {ru:"смущаться",en:"to feel confused / to be flustered",hint:"verb",decoys:["to feel calm","to feel sure","to feel bold"]},
+  {ru:"раздражаться",en:"to get irritated",hint:"verb",decoys:["to calm down","to relax","to enjoy"]},
+  {ru:"удивляться",en:"to be surprised",hint:"verb",decoys:["to be expected","to be bored","to be indifferent"]},
+  {ru:"разочаровываться",en:"to be disappointed",hint:"verb",decoys:["to be pleased","to be excited","to be relieved"]},
+  {ru:"мечтать",en:"to dream / to daydream",hint:"verb",decoys:["to sleep","to think","to plan"]},
+  {ru:"переживать",en:"to worry / to experience deeply",hint:"verb",decoys:["to ignore","to accept","to celebrate"]},
+  {ru:"влюбляться",en:"to fall in love",hint:"verb",decoys:["to fall out","to get married","to flirt"]},
+
+  // ── NOUNS – PEOPLE & SOCIETY ──
+  {ru:"сосед",en:"the neighbor",hint:"noun",decoys:["the stranger","the relative","the landlord"]},
+  {ru:"свидетель",en:"the witness",hint:"noun",decoys:["the victim","the suspect","the judge"]},
+  {ru:"чиновник",en:"the official / the civil servant",hint:"noun",decoys:["the volunteer","the contractor","the manager"]},
+  {ru:"журналист",en:"the journalist",hint:"noun",decoys:["the editor","the broadcaster","the professor"]},
+  {ru:"пожарный",en:"the firefighter",hint:"noun",decoys:["the police officer","the soldier","the paramedic"]},
+  {ru:"пенсионер",en:"the retiree / the pensioner",hint:"noun",decoys:["the student","the teenager","the adult"]},
+  {ru:"пара",en:"the couple / the pair",hint:"noun",decoys:["the friendship","the group","the team"]},
+  {ru:"сирота",en:"the orphan",hint:"noun",decoys:["the refugee","the widow","the volunteer"]},
+  {ru:"иностранец",en:"the foreigner",hint:"noun",decoys:["the citizen","the native","the resident"]},
+  {ru:"толпа",en:"the crowd",hint:"noun",decoys:["the army","the audience","the committee"]},
+  {ru:"профсоюз",en:"the labor union",hint:"noun",decoys:["the company","the association","the government"]},
+  {ru:"защитник",en:"the defender / the advocate",hint:"noun",decoys:["the attacker","the judge","the observer"]},
+  {ru:"наследник",en:"the heir",hint:"noun",decoys:["the owner","the donor","the creditor"]},
+  {ru:"гость",en:"the guest",hint:"noun",decoys:["the tenant","the visitor","the neighbor"]},
+  {ru:"нищий",en:"the beggar",hint:"noun",decoys:["the worker","the merchant","the traveler"]},
+  {ru:"медсестра",en:"the nurse",hint:"noun",decoys:["the doctor","the pharmacist","the surgeon"]},
+  {ru:"опрос",en:"the survey / the poll",hint:"noun",decoys:["the report","the census","the interview"]},
+  {ru:"речь",en:"the speech",hint:"noun",decoys:["the argument","the discussion","the lecture"]},
+  {ru:"митинг",en:"the rally / the protest meeting",hint:"noun",decoys:["the celebration","the election","the ceremony"]},
+  {ru:"соглашение",en:"the agreement",hint:"noun",decoys:["the argument","the decision","the contract"]},
+  {ru:"воспоминание",en:"the memory / the recollection",hint:"noun",decoys:["the dream","the regret","the reminder"]},
+  {ru:"совет",en:"the advice / the council",hint:"noun",decoys:["the order","the decision","the warning"]},
+  {ru:"обычай",en:"the custom / the tradition",hint:"noun",decoys:["the costume","the culture","the habit"]},
+  {ru:"прозвище",en:"the nickname",hint:"noun",decoys:["the surname","the title","the alias"]},
+  {ru:"ложь",en:"the lie",hint:"noun",decoys:["the truth","the secret","the rumor"]},
+  {ru:"слух",en:"the rumor / the hearing",hint:"noun",decoys:["the noise","the news","the gossip"]},
+  {ru:"поколение",en:"the generation",hint:"noun",decoys:["the century","the decade","the era"]},
+  {ru:"гражданин",en:"the citizen",hint:"noun",decoys:["the soldier","the resident","the foreigner"]},
+
+  // ── NOUNS – HOME & EVERYDAY OBJECTS ──
+  {ru:"ящик",en:"the drawer / the box",hint:"noun",decoys:["the cabinet","the shelf","the closet"]},
+  {ru:"подушка",en:"the pillow",hint:"noun",decoys:["the blanket","the mattress","the sheet"]},
+  {ru:"кран",en:"the faucet / the crane",hint:"noun",decoys:["the drain","the pipe","the valve"]},
+  {ru:"холодильник",en:"the refrigerator",hint:"noun",decoys:["the freezer","the oven","the microwave"]},
+  {ru:"розетка",en:"the electrical outlet",hint:"noun",decoys:["the switch","the plug","the cord"]},
+  {ru:"лестница",en:"the staircase / the ladder",hint:"noun",decoys:["the elevator","the ramp","the corridor"]},
+  {ru:"подвал",en:"the basement",hint:"noun",decoys:["the attic","the garage","the hallway"]},
+  {ru:"потолок",en:"the ceiling",hint:"noun",decoys:["the floor","the wall","the foundation"]},
+  {ru:"ковёр",en:"the carpet / the rug",hint:"noun",decoys:["the curtain","the tile","the mat"]},
+  {ru:"зеркало",en:"the mirror",hint:"noun",decoys:["the window","the painting","the frame"]},
+  {ru:"ключ",en:"the key",hint:"noun",decoys:["the lock","the door","the handle"]},
+  {ru:"звонок",en:"the doorbell / the bell",hint:"noun",decoys:["the lock","the knocker","the intercom"]},
+  {ru:"мусор",en:"the trash / the garbage",hint:"noun",decoys:["the dirt","the waste","the recycling"]},
+  {ru:"вешалка",en:"the hanger / the coat rack",hint:"noun",decoys:["the shelf","the hook","the rack"]},
+  {ru:"матрас",en:"the mattress",hint:"noun",decoys:["the pillow","the blanket","the bed frame"]},
+  {ru:"ванна",en:"the bathtub",hint:"noun",decoys:["the shower","the sink","the toilet"]},
+  {ru:"выключатель",en:"the light switch",hint:"noun",decoys:["the plug","the fuse","the circuit breaker"]},
+  {ru:"горшок",en:"the pot / the flowerpot",hint:"noun",decoys:["the vase","the tray","the basket"]},
+  {ru:"угол",en:"the corner",hint:"noun",decoys:["the edge","the angle","the side"]},
+  {ru:"замок",en:"the lock / the castle",hint:"noun",decoys:["the key","the handle","the bolt"]},
+  {ru:"ведро",en:"the bucket",hint:"noun",decoys:["the barrel","the jar","the bin"]},
+  {ru:"полотенце",en:"the towel",hint:"noun",decoys:["the cloth","the napkin","the sheet"]},
+  {ru:"штора",en:"the curtain",hint:"noun",decoys:["the blind","the shade","the screen"]},
+  {ru:"кастрюля",en:"the pot / the saucepan",hint:"noun",decoys:["the pan","the wok","the bowl"]},
+  {ru:"сковорода",en:"the frying pan",hint:"noun",decoys:["the pot","the grill","the wok"]},
+
+  // ── NOUNS – NATURE & ENVIRONMENT ──
+  {ru:"молния",en:"the lightning",hint:"noun",decoys:["the thunder","the storm","the hail"]},
+  {ru:"засуха",en:"the drought",hint:"noun",decoys:["the flood","the frost","the storm"]},
+  {ru:"землетрясение",en:"the earthquake",hint:"noun",decoys:["the volcano","the tsunami","the landslide"]},
+  {ru:"берег",en:"the shore / the bank",hint:"noun",decoys:["the cliff","the beach","the valley"]},
+  {ru:"мох",en:"the moss",hint:"noun",decoys:["the lichen","the fern","the weed"]},
+  {ru:"лист",en:"the leaf",hint:"noun",decoys:["the branch","the root","the bark"]},
+  {ru:"лужа",en:"the puddle",hint:"noun",decoys:["the pond","the lake","the stream"]},
+  {ru:"куст",en:"the bush / the shrub",hint:"noun",decoys:["the tree","the flower","the cactus"]},
+  {ru:"пещера",en:"the cave",hint:"noun",decoys:["the tunnel","the mine","the cliff"]},
+  {ru:"луг",en:"the meadow",hint:"noun",decoys:["the forest","the hill","the valley"]},
+  {ru:"туман",en:"the fog",hint:"noun",decoys:["the cloud","the mist","the haze"]},
+  {ru:"град",en:"the hail",hint:"noun",decoys:["the sleet","the frost","the snow"]},
+  {ru:"буря",en:"the storm",hint:"noun",decoys:["the drizzle","the breeze","the hurricane"]},
+  {ru:"рассвет",en:"the sunrise / the dawn",hint:"noun",decoys:["the sunset","the dusk","the noon"]},
+  {ru:"закат",en:"the sunset",hint:"noun",decoys:["the sunrise","the dawn","the twilight"]},
+  {ru:"водопад",en:"the waterfall",hint:"noun",decoys:["the river","the stream","the rapids"]},
+  {ru:"болото",en:"the swamp / the marsh",hint:"noun",decoys:["the lake","the pond","the lagoon"]},
+  {ru:"равнина",en:"the plain / the flatland",hint:"noun",decoys:["the mountain","the valley","the plateau"]},
+  {ru:"утёс",en:"the cliff",hint:"noun",decoys:["the rock","the dune","the hill"]},
+  {ru:"прилив",en:"the tide",hint:"noun",decoys:["the current","the wave","the surge"]},
+  {ru:"вулкан",en:"the volcano",hint:"noun",decoys:["the mountain","the geyser","the crater"]},
+  {ru:"овраг",en:"the ravine / the gully",hint:"noun",decoys:["the valley","the trench","the ditch"]},
+
+  // ── NOUNS – WORK & MONEY ──
+  {ru:"зарплата",en:"the salary / the wage",hint:"noun",decoys:["the bonus","the tip","the pension"]},
+  {ru:"срок",en:"the deadline / the term",hint:"noun",decoys:["the plan","the period","the limit"]},
+  {ru:"счёт",en:"the bill / the account / the score",hint:"noun",decoys:["the receipt","the contract","the estimate"]},
+  {ru:"партнёр",en:"the partner",hint:"noun",decoys:["the employee","the client","the shareholder"]},
+  {ru:"совещание",en:"the meeting / the conference",hint:"noun",decoys:["the seminar","the lecture","the workshop"]},
+  {ru:"отчёт",en:"the report",hint:"noun",decoys:["the form","the notice","the summary"]},
+  {ru:"штаб-квартира",en:"the headquarters",hint:"noun",decoys:["the branch","the office","the factory"]},
+  {ru:"повышение",en:"the promotion / the raise",hint:"noun",decoys:["the bonus","the transfer","the demotion"]},
+  {ru:"увольнение",en:"the dismissal / the layoff",hint:"noun",decoys:["the resignation","the retirement","the suspension"]},
+  {ru:"долг",en:"the debt / the duty",hint:"noun",decoys:["the loan","the tax","the fine"]},
+  {ru:"кредит",en:"the loan / the credit",hint:"noun",decoys:["the debt","the savings","the investment"]},
+  {ru:"налог",en:"the tax",hint:"noun",decoys:["the fine","the fee","the duty"]},
+  {ru:"прибыль",en:"the profit",hint:"noun",decoys:["the loss","the expense","the revenue"]},
+  {ru:"убыток",en:"the loss",hint:"noun",decoys:["the profit","the gain","the expense"]},
+  {ru:"договор",en:"the contract / the agreement",hint:"noun",decoys:["the policy","the permit","the clause"]},
+  {ru:"забастовка",en:"the strike",hint:"noun",decoys:["the protest","the boycott","the walkout"]},
+  {ru:"должность",en:"the position / the post",hint:"noun",decoys:["the career","the task","the role"]},
+  {ru:"филиал",en:"the branch (of a company)",hint:"noun",decoys:["the headquarters","the warehouse","the office"]},
+  {ru:"накладные расходы",en:"the overhead costs",hint:"noun",decoys:["the profit margin","the net income","the revenue"]},
+  {ru:"рабочий день",en:"the workday",hint:"noun",decoys:["the schedule","the break","the overtime"]},
+  {ru:"склад",en:"the warehouse / the stock",hint:"noun",decoys:["the store","the factory","the depot"]},
+  {ru:"поставщик",en:"the supplier",hint:"noun",decoys:["the buyer","the distributor","the retailer"]},
+
+  // ── ADJECTIVES ──
+  {ru:"гордый",en:"proud",hint:"adjective",decoys:["ashamed","jealous","stubborn"]},
+  {ru:"ревнивый",en:"jealous",hint:"adjective",decoys:["proud","shy","angry"]},
+  {ru:"упрямый",en:"stubborn",hint:"adjective",decoys:["flexible","patient","calm"]},
+  {ru:"наивный",en:"naive",hint:"adjective",decoys:["cunning","wise","suspicious"]},
+  {ru:"хитрый",en:"cunning / sly",hint:"adjective",decoys:["naive","honest","careless"]},
+  {ru:"добрый",en:"kind / good",hint:"adjective",decoys:["mean","cold","distant"]},
+  {ru:"жадный",en:"greedy / stingy",hint:"adjective",decoys:["generous","thrifty","wealthy"]},
+  {ru:"щедрый",en:"generous",hint:"adjective",decoys:["stingy","selfish","greedy"]},
+  {ru:"ленивый",en:"lazy",hint:"adjective",decoys:["hardworking","active","energetic"]},
+  {ru:"трудолюбивый",en:"hardworking / diligent",hint:"adjective",decoys:["lazy","inactive","slow"]},
+  {ru:"смелый",en:"brave / bold",hint:"adjective",decoys:["cowardly","reckless","timid"]},
+  {ru:"трусливый",en:"cowardly",hint:"adjective",decoys:["brave","cautious","bold"]},
+  {ru:"честный",en:"honest",hint:"adjective",decoys:["dishonest","deceptive","corrupt"]},
+  {ru:"лживый",en:"lying / deceitful",hint:"adjective",decoys:["honest","truthful","sincere"]},
+  {ru:"любопытный",en:"curious",hint:"adjective",decoys:["indifferent","bored","distracted"]},
+  {ru:"разумный",en:"sensible / reasonable",hint:"adjective",decoys:["foolish","reckless","impulsive"]},
+  {ru:"небрежный",en:"careless / sloppy",hint:"adjective",decoys:["careful","thorough","attentive"]},
+  {ru:"аккуратный",en:"neat / careful / tidy",hint:"adjective",decoys:["messy","careless","inattentive"]},
+  {ru:"усталый",en:"tired / weary",hint:"adjective",decoys:["energized","rested","refreshed"]},
+  {ru:"испуганный",en:"scared / frightened",hint:"adjective",decoys:["brave","calm","excited"]},
+  {ru:"облегчённый",en:"relieved",hint:"adjective",decoys:["worried","tense","stressed"]},
+  {ru:"разочарованный",en:"disappointed",hint:"adjective",decoys:["satisfied","pleased","excited"]},
+  {ru:"довольный",en:"satisfied / pleased",hint:"adjective",decoys:["disappointed","bored","dissatisfied"]},
+  {ru:"нетерпеливый",en:"impatient",hint:"adjective",decoys:["patient","calm","relaxed"]},
+  {ru:"доступный",en:"available / accessible",hint:"adjective",decoys:["busy","unavailable","occupied"]},
+  {ru:"подходящий",en:"suitable / appropriate",hint:"adjective",decoys:["inadequate","excessive","unsuitable"]},
+  {ru:"неожиданный",en:"unexpected",hint:"adjective",decoys:["expected","planned","predictable"]},
+  {ru:"способный",en:"capable / talented",hint:"adjective",decoys:["incapable","clumsy","helpless"]},
+  {ru:"мощный",en:"powerful",hint:"adjective",decoys:["weak","fragile","helpless"]},
+  {ru:"повседневный",en:"everyday / daily",hint:"adjective",decoys:["occasional","rare","special"]},
+  {ru:"вежливый",en:"polite",hint:"adjective",decoys:["rude","arrogant","aggressive"]},
+  {ru:"грубый",en:"rude / rough",hint:"adjective",decoys:["polite","gentle","kind"]},
+  {ru:"скромный",en:"modest / humble",hint:"adjective",decoys:["arrogant","proud","showy"]},
+
+  // ── ADVERBS, CONNECTORS & PHRASES ──
+  {ru:"несмотря на",en:"despite / in spite of",hint:"phrase",decoys:["because of","thanks to","due to"]},
+  {ru:"кроме того",en:"furthermore / in addition",hint:"phrase",decoys:["however","instead","otherwise"]},
+  {ru:"с другой стороны",en:"on the other hand",hint:"phrase",decoys:["in conclusion","in summary","for example"]},
+  {ru:"что касается",en:"as for / regarding",hint:"phrase",decoys:["in order to","instead of","according to"]},
+  {ru:"следовательно",en:"therefore / consequently",hint:"adverb",decoys:["however","meanwhile","nevertheless"]},
+  {ru:"часто",en:"often",hint:"adverb",decoys:["rarely","always","never"]},
+  {ru:"иногда",en:"sometimes",hint:"adverb",decoys:["always","never","often"]},
+  {ru:"редко",en:"rarely / seldom",hint:"adverb",decoys:["often","always","usually"]},
+  {ru:"немедленно",en:"immediately",hint:"adverb",decoys:["later on","eventually","gradually"]},
+  {ru:"внезапно",en:"suddenly",hint:"adverb",decoys:["slowly","gradually","eventually"]},
+  {ru:"на самом деле",en:"in reality / actually",hint:"phrase",decoys:["in theory","in general","in practice"]},
+  {ru:"в конце концов",en:"in the end / after all",hint:"phrase",decoys:["right away","at first","in the beginning"]},
+  {ru:"при условии что",en:"provided that",hint:"phrase",decoys:["in case that","even though","as soon as"]},
+  {ru:"так как",en:"since / because",hint:"phrase",decoys:["unless","although","even if"]},
+  {ru:"таким образом",en:"in this way / thus",hint:"phrase",decoys:["on the contrary","instead","otherwise"]},
+  {ru:"хотя",en:"although / even though",hint:"conjunction",decoys:["because","since","unless"]},
+  {ru:"едва",en:"barely / hardly",hint:"adverb",decoys:["already","still","yet"]},
+  {ru:"до сих пор",en:"still / up to now",hint:"phrase",decoys:["already","no longer","soon"]},
+  {ru:"как только",en:"as soon as",hint:"phrase",decoys:["as long as","in case","unless"]},
+  {ru:"тем временем",en:"meanwhile",hint:"phrase",decoys:["therefore","afterwards","instead"]},
+  {ru:"вдобавок",en:"on top of that / moreover",hint:"adverb",decoys:["on the contrary","instead","otherwise"]},
+  {ru:"впрочем",en:"however / after all",hint:"adverb",decoys:["therefore","additionally","similarly"]},
+
+  // ── IDIOMS & SET PHRASES ──
+  {ru:"быть сытым по горло",en:"to be fed up",hint:"phrase",decoys:["to be satisfied","to be hungry","to be full"]},
+  {ru:"иметь желание",en:"to feel like doing / to want to",hint:"phrase",decoys:["to be afraid of","to be tired of","to be proud of"]},
+  {ru:"выполнять",en:"to carry out / to accomplish",hint:"phrase",decoys:["to give up","to put aside","to leave behind"]},
+  {ru:"обращать внимание",en:"to pay attention",hint:"phrase",decoys:["to make a note","to ignore","to pretend"]},
+  {ru:"принимать во внимание",en:"to take into account",hint:"phrase",decoys:["to count on someone","to forget about","to disagree with"]},
+  {ru:"произвести впечатление",en:"to make an impression",hint:"phrase",decoys:["to fail to impress","to remain unseen","to be ignored"]},
+  {ru:"быть в курсе",en:"to be up to date / to be aware",hint:"phrase",decoys:["to be confused","to be behind","to be uninformed"]},
+  {ru:"вдруг",en:"all of a sudden / suddenly",hint:"adverb",decoys:["gradually","repeatedly","eventually"]},
+  {ru:"может быть",en:"maybe / perhaps",hint:"phrase",decoys:["definitely","certainly","absolutely"]},
+  {ru:"иметь в виду",en:"to mean / to have in mind",hint:"phrase",decoys:["to forget","to lose track","to change one's mind"]},
+  {ru:"строить иллюзии",en:"to have illusions / to get one's hopes up",hint:"phrase",decoys:["to face reality","to feel hopeless","to make plans"]},
+  {ru:"нет никакого способа",en:"there is no way",hint:"phrase",decoys:["it is possible","there is a chance","it might happen"]},
+  {ru:"не иметь значения",en:"to not matter / to make no difference",hint:"phrase",decoys:["to matter a lot","to be important","to be unfair"]},
+  {ru:"намеренно",en:"on purpose / deliberately",hint:"adverb",decoys:["by accident","in a hurry","without thinking"]},
+  {ru:"вовсе нет",en:"not at all",hint:"phrase",decoys:["completely","partly","to some extent"]},
+  {ru:"договорились",en:"agreed / it's a deal",hint:"phrase",decoys:["in doubt","in disagreement","in question"]},
+  {ru:"вовремя",en:"on time",hint:"phrase",decoys:["late","early","ahead of time"]},
+  {ru:"не к месту",en:"out of place / inappropriate",hint:"phrase",decoys:["fitting in","at the right time","perfectly suited"]},
+  {ru:"в глубине души",en:"deep down / at heart",hint:"phrase",decoys:["on the surface","in the end","at first"]},
+  {ru:"быть правым",en:"to be right",hint:"phrase",decoys:["to be wrong","to have a reason","to make sense"]},
+  {ru:"торопиться",en:"to hurry up",hint:"phrase",decoys:["to slow down","to take a break","to be on time"]},
+  {ru:"сводить с ума",en:"to drive crazy / to drive mad",hint:"phrase",decoys:["to calm down","to bore someone","to please someone"]},
+  {ru:"потерять голову",en:"to lose one's head / to lose control",hint:"phrase",decoys:["to stay calm","to think clearly","to take charge"]},
+  {ru:"нести ответственность",en:"to be responsible / to bear responsibility",hint:"phrase",decoys:["to avoid blame","to share credit","to give orders"]},
+  {ru:"время от времени",en:"from time to time",hint:"phrase",decoys:["all the time","never again","right away"]},
+  {ru:"с тех пор",en:"since then / ever since",hint:"phrase",decoys:["before that","until now","right away"]},
+  {ru:"в отличие от",en:"unlike / in contrast to",hint:"phrase",decoys:["similar to","the same as","along with"]},
+  {ru:"по крайней мере",en:"at least",hint:"phrase",decoys:["at most","no more than","as much as"]},
+
+  // ── NOUNS – ABSTRACT & GENERAL ──
+  {ru:"привычка",en:"the habit",hint:"noun",decoys:["the custom","the tradition","the rule"]},
+  {ru:"навык",en:"the skill",hint:"noun",decoys:["the talent","the knowledge","the ability"]},
+  {ru:"опыт",en:"the experience",hint:"noun",decoys:["the experiment","the example","the expertise"]},
+  {ru:"знание",en:"the knowledge",hint:"noun",decoys:["the skill","the wisdom","the information"]},
+  {ru:"мнение",en:"the opinion",hint:"noun",decoys:["the fact","the belief","the theory"]},
+  {ru:"возможность",en:"the opportunity / the possibility",hint:"noun",decoys:["the ability","the permission","the advantage"]},
+  {ru:"решение",en:"the decision / the solution",hint:"noun",decoys:["the problem","the question","the plan"]},
+  {ru:"причина",en:"the reason / the cause",hint:"noun",decoys:["the result","the effect","the purpose"]},
+  {ru:"последствие",en:"the consequence",hint:"noun",decoys:["the reason","the cause","the problem"]},
+  {ru:"преимущество",en:"the advantage",hint:"noun",decoys:["the disadvantage","the obstacle","the risk"]},
+  {ru:"недостаток",en:"the disadvantage / the flaw",hint:"noun",decoys:["the advantage","the benefit","the strength"]},
+  {ru:"цель",en:"the goal / the aim",hint:"noun",decoys:["the plan","the dream","the wish"]},
+  {ru:"задача",en:"the task / the problem",hint:"noun",decoys:["the goal","the result","the challenge"]},
+  {ru:"усилие",en:"the effort",hint:"noun",decoys:["the result","the progress","the attempt"]},
+  {ru:"успех",en:"the success",hint:"noun",decoys:["the failure","the luck","the progress"]},
+  {ru:"неудача",en:"the failure / the setback",hint:"noun",decoys:["the success","the mistake","the delay"]},
+  {ru:"ошибка",en:"the mistake / the error",hint:"noun",decoys:["the accident","the problem","the failure"]},
+  {ru:"изменение",en:"the change",hint:"noun",decoys:["the improvement","the reform","the shift"]},
+  {ru:"развитие",en:"the development",hint:"noun",decoys:["the growth","the progress","the change"]},
+  {ru:"влияние",en:"the influence / the impact",hint:"noun",decoys:["the effect","the power","the control"]},
+  {ru:"связь",en:"the connection / the communication",hint:"noun",decoys:["the relationship","the network","the link"]},
+  {ru:"отношение",en:"the relationship / the attitude",hint:"noun",decoys:["the connection","the behavior","the feeling"]},
+  {ru:"вопрос",en:"the question / the issue",hint:"noun",decoys:["the answer","the problem","the topic"]},
+  {ru:"ответ",en:"the answer / the response",hint:"noun",decoys:["the question","the solution","the reply"]},
+  {ru:"право",en:"the right / the law",hint:"noun",decoys:["the duty","the permission","the privilege"]},
+  {ru:"обязанность",en:"the duty / the obligation",hint:"noun",decoys:["the right","the privilege","the freedom"]},
+  {ru:"правило",en:"the rule",hint:"noun",decoys:["the law","the norm","the regulation"]},
+  {ru:"закон",en:"the law",hint:"noun",decoys:["the rule","the regulation","the order"]},
+];
+
+let audioCtx=null;
+function unlockAudio(){
+  if(audioCtx)return;
+  audioCtx=new(window.AudioContext||window.webkitAudioContext)();
+  const buf=audioCtx.createBuffer(1,1,22050);
+  const src=audioCtx.createBufferSource();
+  src.buffer=buf;src.connect(audioCtx.destination);src.start(0);
+}
+function playTone(type){
+  if(!audioCtx)return;
+  if(audioCtx.state==='suspended')audioCtx.resume();
+  const ctx=audioCtx,now=ctx.currentTime;
+  if(type==='correct'){
+    [523.25,659.25,783.99].forEach((freq,i)=>{
+      const o=ctx.createOscillator(),g=ctx.createGain();
+      o.connect(g);g.connect(ctx.destination);
+      o.type='sine';
+      o.frequency.setValueAtTime(freq,now+i*0.12);
+      g.gain.setValueAtTime(0.28,now+i*0.12);
+      g.gain.exponentialRampToValueAtTime(0.001,now+i*0.12+0.35);
+      o.start(now+i*0.12);o.stop(now+i*0.12+0.4);
+    });
+  }else{
+    const o=ctx.createOscillator(),g=ctx.createGain();
+    o.connect(g);g.connect(ctx.destination);
+    o.type='sawtooth';
+    o.frequency.setValueAtTime(300,now);
+    o.frequency.exponentialRampToValueAtTime(160,now+0.4);
+    g.gain.setValueAtTime(0.18,now);
+    g.gain.exponentialRampToValueAtTime(0.001,now+0.5);
+    o.start(now);o.stop(now+0.55);
+  }
+}
+let voices=[];
+function loadVoices(){voices=window.speechSynthesis?speechSynthesis.getVoices():[];}
+function speakRussian(text){
+  if(!window.speechSynthesis)return;
+  speechSynthesis.cancel();
+  const u=new SpeechSynthesisUtterance(text);
+  u.lang='ru-RU';u.rate=0.85;u.pitch=1.0;
+  if(!voices.length)loadVoices();
+  const v=voices.find(v=>v.lang==='ru-RU'||v.lang==='ru')||voices.find(v=>v.lang.startsWith('ru'));
+  if(v)u.voice=v;
+  speechSynthesis.speak(u);
+}
+let questions=[],current=0,score=0,answered=false;
+function shuffle(a){
+  a=[...a];
+  for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];}
+  return a;
+}
+document.getElementById('start-btn').addEventListener('click',()=>{
+  unlockAudio();loadVoices();
+  document.getElementById('splash-screen').style.display='none';
+  document.getElementById('quiz-screen').style.display='block';
+  initQuiz();
+});
+function initQuiz(){
+  questions=shuffle(wordBank).slice(0,20);
+  current=0;score=0;answered=false;
+  buildDots();loadQuestion();
+}
+function restartQuiz(){
+  document.getElementById('results-screen').style.display='none';
+  document.getElementById('quiz-screen').style.display='block';
+  initQuiz();
+}
+function buildDots(){
+  const row=document.getElementById('dots-row');row.innerHTML='';
+  for(let i=0;i<20;i++){const d=document.createElement('div');d.className='dot';d.id='dot-'+i;row.appendChild(d);}
+}
+function loadQuestion(){
+  answered=false;
+  const q=questions[current];
+  document.getElementById('progress-bar').style.width=(current/20*100)+'%';
+  document.getElementById('progress-label').textContent=current+' / 20';
+  document.getElementById('score-display').textContent=score;
+  document.getElementById('word-number').textContent='Word '+(current+1);
+  document.getElementById('russian-word').textContent=q.ru;
+  document.getElementById('word-hint').textContent=q.hint;
+  document.getElementById('word-card').className='word-card';
+  const fb=document.getElementById('feedback');fb.textContent='';fb.className='feedback';
+  const choices=shuffle([q.en,...q.decoys.slice(0,3)]);
+  const el=document.getElementById('choices');el.innerHTML='';
+  choices.forEach(c=>{
+    const b=document.createElement('button');
+    b.className='choice-btn';b.textContent=c;
+    b.addEventListener('click',()=>handleAnswer(c,q.en,b));
+    el.appendChild(b);
+  });
+  document.getElementById('next-btn').className='next-btn';
+  setTimeout(()=>speakRussian(q.ru),350);
+}
+function handleAnswer(chosen,correct,btn){
+  if(answered)return;answered=true;
+  const ok=chosen===correct;
+  const card=document.getElementById('word-card');
+  const fb=document.getElementById('feedback');
+  const nb=document.getElementById('next-btn');
+  document.querySelectorAll('.choice-btn').forEach(b=>{
+    b.disabled=true;
+    if(b.textContent===correct)b.classList.add('correct');
+  });
+  if(ok){
+    score++;btn.classList.add('correct');
+    card.classList.add('correct','pulse-correct');
+    fb.textContent='✓ Correct! Молодец!';fb.className='feedback show-correct';
+  }else{
+    btn.classList.add('wrong');card.classList.add('wrong','shake');
+    fb.textContent='✗ Incorrect. The answer is: "'+correct+'"';fb.className='feedback show-wrong';
+    setTimeout(()=>card.classList.remove('shake'),400);
+  }
+  playTone(ok?'correct':'wrong');
+  const dot=document.getElementById('dot-'+current);
+  if(dot)dot.className='dot '+(ok?'correct':'wrong');
+  document.getElementById('score-display').textContent=score;
+  nb.className='next-btn visible';
+  nb.textContent=current===19?'See Results →':'Next word →';
+}
+document.getElementById('next-btn').addEventListener('click',()=>{
+  current++;current>=20?showResults():loadQuestion();
+});
+document.getElementById('speak-btn').addEventListener('click',()=>{
+  const w=document.getElementById('russian-word').textContent;
+  if(w&&w!=='—')speakRussian(w);
+});
+function showResults(){
+  document.getElementById('quiz-screen').style.display='none';
+  document.getElementById('results-screen').style.display='block';
+  const champ=score>=17;
+  document.getElementById('results-emoji').textContent=champ?'🏆':score>=12?'💪':'📚';
+  const t=document.getElementById('results-title');
+  t.textContent=champ?'Чемпион!':score>=12?'Хорошая работа!':'Продолжай учиться!';
+  t.className='results-title'+(champ?' results-champ':'');
+  const msg=champ?"Outstanding! You're a true Russian champion 🌟":score>=12?"Solid work — keep building on this!":"Keep studying — you'll get there!";
+  document.getElementById('results-score').innerHTML='You got <strong>'+score+' / 20</strong> correct.<br><small style="color:var(--muted)">'+msg+'</small>';
+}
+if(window.speechSynthesis){speechSynthesis.onvoiceschanged=loadVoices;loadVoices();}
+</script>
+</body>
+</html>

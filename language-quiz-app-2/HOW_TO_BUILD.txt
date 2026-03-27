@@ -1,0 +1,201 @@
+# HOW TO BUILD YOUR APP USING GITHUB (FREE)
+# No coding knowledge needed — just follow these steps exactly.
+# Total time: about 10 minutes.
+
+═══════════════════════════════════════════════════════════════
+STEP 1 — Create a free GitHub account (skip if you have one)
+═══════════════════════════════════════════════════════════════
+
+1. Go to https://gith	
+2. Click "Sign up"
+3. Choose a username, enter your email, create a password
+4. Verify your email address
+
+
+═══════════════════════════════════════════════════════════════
+STEP 2 — Create a new repository
+═══════════════════════════════════════════════════════════════
+
+1. Once logged in, click the green "New" button (top left)
+   — OR go to: https://github.com/new
+
+2. Fill in:
+   • Repository name: language-quiz
+   • Description: Language quiz desktop app  (optional)
+   • Set to: Public   ← important, private repos need a paid plan for Actions minutes
+   • Do NOT check "Add a README file"
+
+3. Click "Create repository"
+
+4. You'll see a page with setup instructions — leave this page open,
+   you'll need the repository URL in Step 4.
+
+
+═══════════════════════════════════════════════════════════════
+STEP 3 — Install GitHub Desktop (the easy way to upload files)
+═══════════════════════════════════════════════════════════════
+
+1. Go to: https://desktop.github.com
+2. Download and install GitHub Desktop for your operating system
+3. Open GitHub Desktop and sign in with your GitHub account
+
+
+═══════════════════════════════════════════════════════════════
+STEP 4 — Upload the project folder
+═══════════════════════════════════════════════════════════════
+
+1. Unzip the file you downloaded: language-quiz-electron.zip
+   This creates a folder called: language-quiz-app
+
+2. In GitHub Desktop:
+   • Click "File" → "Add Local Repository"
+   • Click "Choose..." and select the language-quiz-app folder
+   • It will say "This directory does not appear to be a Git repository"
+   • Click "create a repository" link that appears
+   • Click "Initialize Repository"
+
+3. You'll now see all the files listed as "changes"
+
+4. At the bottom left, in the "Summary" box, type:
+       Initial upload
+
+5. Click "Commit to main"
+
+6. Click "Publish repository" (blue button, top right)
+   • Make sure "Keep this code private" is UN-checked
+   • Click "Publish Repository"
+
+
+═══════════════════════════════════════════════════════════════
+STEP 5 — Watch the build happen automatically
+═══════════════════════════════════════════════════════════════
+
+1. Go to your repository on GitHub:
+   https://github.com/YOUR-USERNAME/language-quiz
+   (replace YOUR-USERNAME with your actual GitHub username)
+
+2. Click the "Actions" tab near the top of the page
+
+3. You'll see "Build Language Quiz App" running
+   • A yellow circle means it's building  (takes 5–10 minutes)
+   • A green checkmark means it's done ✓
+   • A red X means something went wrong (see Troubleshooting below)
+
+4. GitHub is simultaneously building on a real Mac AND a real Windows
+   machine in the cloud — for free!
+
+
+═══════════════════════════════════════════════════════════════
+STEP 6 — Download your finished apps
+═══════════════════════════════════════════════════════════════
+
+1. Once the green checkmark appears, click on
+   "Build Language Quiz App" in the Actions tab
+
+2. Scroll to the bottom of the page to find "Artifacts"
+
+3. You'll see two download links:
+   • Language-Quiz-Mac      → download this on your Mac
+   • Language-Quiz-Windows  → download this on your Windows PC
+
+4. Each downloads as a .zip file — unzip it to get:
+   • Mac:     Language Quiz-1.0.0.dmg    (double-click to install)
+   • Windows: Language Quiz Setup 1.0.0.exe  (double-click to install)
+
+
+═══════════════════════════════════════════════════════════════
+INSTALLING ON MAC
+═══════════════════════════════════════════════════════════════
+
+1. Double-click the .dmg file
+2. Drag "Language Quiz" into your Applications folder
+3. First time opening: right-click the app → Open → Open
+   (Mac warns about unrecognized developers — this is normal for
+   unsigned apps. It's safe because you built it yourself.)
+
+
+═══════════════════════════════════════════════════════════════
+INSTALLING ON WINDOWS
+═══════════════════════════════════════════════════════════════
+
+1. Double-click the .exe installer
+2. If Windows Defender SmartScreen appears, click "More info" → "Run anyway"
+   (Same reason as Mac — the app isn't signed with a paid certificate.)
+3. Follow the installer steps
+4. The app appears in your Start menu as "Language Quiz"
+
+
+═══════════════════════════════════════════════════════════════
+TROUBLESHOOTING
+═══════════════════════════════════════════════════════════════
+
+Red X in Actions tab?
+→ Click on the failed job to see error details
+→ Most common cause: a file was missing from the upload
+→ Solution: in GitHub Desktop, check all files are present and
+  commit + push again
+
+"Artifacts" section not appearing?
+→ The build may still be running — wait a few more minutes
+→ Artifacts only appear after both jobs complete successfully
+
+Mac says app is damaged?
+→ Open Terminal and run: xattr -cr /Applications/Language\ Quiz.app
+→ Then try opening again
+
+Adding new quiz files later?
+→ Copy the new .html file into the quizzes/ folder
+→ Add a button for it in launcher.html
+→ In GitHub Desktop: commit the changes and push
+→ GitHub automatically rebuilds and produces new installers
+
+
+
+
+
+xxxxxxx
+
+You're actually in great shape! You've successfully created the language-quiz repository on GitHub — that's the hard part done. The page you're seeing is just GitHub saying "your repo is empty, here's how to add files."
+Now you just need to upload the files using GitHub Desktop. Here's exactly what to do from where you are:
+Step 1 — Click "Set up in Desktop"
+You can see that button right there on your screen in the "Quick setup" box. Click it. It will open GitHub Desktop and automatically connect to your new repo.
+Step 2 — GitHub Desktop asks where to save it locally
+It will ask you to choose a local folder on your Mac. Pick somewhere easy like your Desktop or Documents. Click "Clone".
+Step 3 — Copy your quiz files into that folder
+Open Finder and find the language-quiz-app folder from the zip you downloaded earlier. Copy everything inside it into the folder GitHub Desktop just created. You want the folder to contain:
+
+main.js
+launcher.html
+package.json
+HOW_TO_BUILD.txt
+README.md
+.github/ folder
+quizzes/ folder
+icons/ folder
+
+Step 4 — Back in GitHub Desktop
+It will show all those files as new changes. At the bottom left type Initial upload in the Summary box, click Commit to main, then click Push origin.
+Step 5 — Go back to GitHub in Safari and click the Actions tab
+The build will start automatically. You'll see it running within about 30 seconds.
+You're very close — one more push and it's building! Let me know if you hit any snag.
+
+
+
+
+You're doing great — GitHub Desktop is open and connected to your language-quiz repo. The folder is just empty right now, which is exactly why it says "No local changes."
+I can see the Finder window is already open showing the language-quiz folder. You just need to copy your files into it. Here's exactly what to do:
+Step 1 — Find where the empty folder is
+In GitHub Desktop, click "Show in Finder" (the button visible on your screen). This will reveal exactly where the empty language-quiz folder lives on your Mac.
+Step 2 — Find your downloaded zip
+Open a second Finder window. Go to your Downloads folder and find language-quiz-electron.zip. Double-click it to unzip if you haven't already. This gives you a folder called language-quiz-app.
+Step 3 — Copy the files across
+Open the language-quiz-app folder. Select everything inside it (⌘A to select all), then copy (⌘C). Now go to the empty language-quiz folder that GitHub Desktop showed you, and paste (⌘V).
+Step 4 — Go back to GitHub Desktop
+It should now show all the files listed on the left as changes. You'll see a count like "15 changed files" instead of "0 changed files."
+Step 5 — Commit and publish
+
+Type Initial upload in the Summary (required) box at the bottom left
+Click Commit to main
+Click Publish branch at the top (you can see that button already there)
+
+That's it — the build starts automatically on GitHub! Let me know what you see after Step 4.

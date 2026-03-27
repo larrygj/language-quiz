@@ -1,0 +1,581 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>Deutsch — German Quiz</title>
+<link href="https://fonts.googleapis.com/css2?family=Josefin+Sans:wght@400;700&family=Inter:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg:#0f0f0d;--card:#181810;--border:#2e2c1a;
+    --accent:#d4a017;--accent2:#cc0000;--accent3:#f5f0e0;
+    --correct:#4be87e;--wrong:#e84b4b;
+    --text:#f0ede0;--muted:#6e6b50;--radius:12px;
+  }
+  *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
+  body{background:var(--bg);color:var(--text);font-family:'Inter',sans-serif;min-height:100vh;min-height:-webkit-fill-available;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:20px;overflow-x:hidden;}
+  body::before{content:'';position:fixed;inset:0;background:
+    radial-gradient(ellipse 65% 45% at 10% 10%,rgba(212,160,23,0.08) 0%,transparent 55%),
+    radial-gradient(ellipse 55% 45% at 92% 85%,rgba(204,0,0,0.07) 0%,transparent 55%);
+    pointer-events:none;z-index:0;}
+  .container{position:relative;z-index:1;width:100%;max-width:560px;}
+
+  /* SPLASH */
+  #splash-screen{text-align:center;padding:20px;}
+  .splash-logo{font-family:'Josefin Sans',sans-serif;font-size:clamp(2.8rem,9vw,4.4rem);font-weight:700;letter-spacing:4px;text-transform:uppercase;line-height:1;margin-bottom:4px;}
+  .splash-logo .bk{color:var(--text);}
+  .splash-logo .rd{color:var(--accent2);}
+  .splash-logo .gd{color:var(--accent);}
+  .splash-tagline{font-family:'Inter',sans-serif;font-size:0.78rem;color:var(--muted);letter-spacing:0.22em;text-transform:uppercase;margin-bottom:32px;}
+  .splash-features{list-style:none;text-align:left;display:inline-flex;flex-direction:column;gap:14px;margin-bottom:38px;background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:22px 26px;width:100%;max-width:380px;}
+  .splash-features li{display:flex;align-items:center;gap:12px;font-size:0.93rem;color:var(--text);}
+  .splash-features li .icon{font-size:1.3rem;width:28px;flex-shrink:0;text-align:center;}
+  .start-btn{background:var(--accent2);color:#fff;border:none;border-radius:var(--radius);font-family:'Inter',sans-serif;font-size:1.05rem;font-weight:500;padding:18px 56px;cursor:pointer;letter-spacing:0.03em;display:inline-block;}
+  .start-btn:active{transform:scale(0.96);background:#990000;}
+  .splash-note{color:var(--muted);font-size:0.74rem;margin-top:14px;}
+
+  /* HEADER */
+  header{text-align:center;margin-bottom:24px;}
+  .logo{font-family:'Josefin Sans',sans-serif;font-size:clamp(1.8rem,5vw,2.5rem);font-weight:700;letter-spacing:3px;text-transform:uppercase;}
+  .logo .bk{color:var(--text);}
+  .logo .rd{color:var(--accent2);}
+  .logo .gd{color:var(--accent);}
+  .subtitle{color:var(--muted);font-size:0.72rem;letter-spacing:0.16em;text-transform:uppercase;margin-top:4px;}
+
+  /* PROGRESS */
+  .progress-row{display:flex;align-items:center;gap:10px;margin-bottom:16px;}
+  .progress-bar-wrap{flex:1;height:4px;background:var(--border);border-radius:99px;overflow:hidden;}
+  .progress-bar-fill{height:100%;background:linear-gradient(90deg,#1a1a1a,var(--accent2),var(--accent));border-radius:99px;transition:width 0.5s cubic-bezier(.4,0,.2,1);}
+  .progress-label{font-size:0.72rem;color:var(--muted);white-space:nowrap;}
+  .score-badge{background:var(--card);border:1px solid var(--border);border-radius:99px;padding:4px 12px;font-size:0.78rem;font-weight:500;color:var(--accent);white-space:nowrap;}
+
+  /* WORD CARD */
+  .word-card{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:34px 24px 24px;margin-bottom:14px;text-align:center;position:relative;transition:border-color 0.3s;}
+  .word-card.correct{border-color:var(--correct);}
+  .word-card.wrong{border-color:var(--wrong);}
+  .word-number{position:absolute;top:12px;left:16px;font-size:0.65rem;color:var(--muted);letter-spacing:0.1em;text-transform:uppercase;}
+  .speak-btn{position:absolute;top:10px;right:14px;background:none;border:1px solid var(--border);border-radius:99px;color:var(--accent);font-size:1rem;cursor:pointer;padding:4px 10px;line-height:1.5;}
+  .speak-btn:active{background:rgba(212,160,23,0.15);border-color:var(--accent);}
+  .german-word{font-family:'Josefin Sans',sans-serif;font-size:clamp(1.6rem,6vw,2.8rem);font-weight:700;letter-spacing:1px;text-transform:uppercase;margin:10px 0 6px;line-height:1.15;}
+  .word-hint{font-size:0.72rem;color:var(--muted);letter-spacing:0.1em;text-transform:uppercase;}
+
+  /* CHOICES */
+  .choices{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin-bottom:12px;}
+  .choice-btn{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);color:var(--text);font-family:'Inter',sans-serif;font-size:0.86rem;font-weight:400;padding:16px 10px;cursor:pointer;text-align:center;line-height:1.3;}
+  .choice-btn:active:not(:disabled){background:rgba(212,160,23,0.08);border-color:var(--accent);transform:scale(0.97);}
+  .choice-btn.correct{background:rgba(75,232,126,0.12);border-color:var(--correct);color:var(--correct);font-weight:500;}
+  .choice-btn.wrong{background:rgba(232,75,75,0.12);border-color:var(--wrong);color:var(--wrong);font-weight:500;}
+  .choice-btn:disabled{cursor:default;}
+
+  /* FEEDBACK */
+  .feedback{min-height:34px;text-align:center;font-size:0.87rem;color:var(--muted);margin-bottom:10px;}
+  .feedback.show-correct{color:var(--correct);font-weight:500;}
+  .feedback.show-wrong{color:var(--wrong);font-weight:500;}
+
+  /* NEXT */
+  .next-btn{width:100%;background:var(--accent2);color:#fff;border:none;border-radius:var(--radius);font-family:'Inter',sans-serif;font-size:0.95rem;font-weight:500;padding:16px;cursor:pointer;display:none;}
+  .next-btn:active{background:#990000;transform:scale(0.98);}
+  .next-btn.visible{display:block;}
+
+  /* DOTS */
+  .dots-row{display:flex;gap:5px;flex-wrap:wrap;justify-content:center;margin-top:12px;}
+  .dot{width:10px;height:10px;border-radius:50%;background:var(--border);transition:background 0.3s;}
+  .dot.correct{background:var(--correct);}
+  .dot.wrong{background:var(--wrong);}
+
+  /* RESULTS */
+  #results-screen{display:none;text-align:center;padding:30px 20px;}
+  .results-emoji{font-size:5rem;margin-bottom:14px;animation:pop 0.5s cubic-bezier(.4,0,.2,1);}
+  @keyframes pop{0%{transform:scale(0.3);opacity:0;}70%{transform:scale(1.15);}100%{transform:scale(1);opacity:1;}}
+  .results-title{font-family:'Josefin Sans',sans-serif;font-size:2.2rem;font-weight:700;letter-spacing:3px;text-transform:uppercase;margin-bottom:8px;}
+  .results-champ{color:var(--accent);}
+  .results-score{font-size:1.05rem;color:var(--muted);margin-bottom:28px;line-height:1.8;}
+  .results-score strong{color:var(--text);font-size:1.4rem;}
+  .restart-btn{background:var(--accent2);color:#fff;border:none;border-radius:var(--radius);font-family:'Inter',sans-serif;font-size:1rem;font-weight:500;padding:16px 40px;cursor:pointer;}
+  .restart-btn:active{background:#990000;}
+
+  @keyframes shake{0%,100%{transform:translateX(0)}20%{transform:translateX(-6px)}40%{transform:translateX(6px)}60%{transform:translateX(-4px)}80%{transform:translateX(4px)}}
+  .shake{animation:shake 0.35s ease;}
+  @keyframes pulse-correct{0%{box-shadow:0 0 0 0 rgba(75,232,126,0.4)}70%{box-shadow:0 0 0 12px rgba(75,232,126,0)}100%{box-shadow:0 0 0 0 rgba(75,232,126,0)}}
+  .pulse-correct{animation:pulse-correct 0.5s ease;}
+</style>
+</head>
+<body>
+<div class="container">
+
+  <!-- SPLASH -->
+  <div id="splash-screen">
+    <div class="splash-logo"><span class="bk">Deu</span><span class="rd">ts</span><span class="gd">ch</span></div>
+    <div class="splash-tagline">Intermediate Vocabulary Quiz</div>
+    <ul class="splash-features">
+      <li><span class="icon">🇩🇪</span> 300 intermediate German words</li>
+      <li><span class="icon">🔊</span> Spoken aloud in German</li>
+      <li><span class="icon">🎵</span> Sound feedback on every answer</li>
+      <li><span class="icon">🏆</span> Score 17+ out of 20 and earn Meister!</li>
+    </ul>
+    <button class="start-btn" id="start-btn">Los geht's! &nbsp;→</button>
+    <div class="splash-note">Tap to unlock audio &amp; begin</div>
+  </div>
+
+  <!-- QUIZ -->
+  <div id="quiz-screen" style="display:none">
+    <header>
+      <div class="logo"><span class="bk">Deu</span><span class="rd">ts</span><span class="gd">ch</span></div>
+      <div class="subtitle">Intermediate Vocabulary Quiz</div>
+    </header>
+    <div class="progress-row">
+      <div class="progress-bar-wrap"><div class="progress-bar-fill" id="progress-bar" style="width:0%"></div></div>
+      <div class="progress-label" id="progress-label">0 / 20</div>
+      <div class="score-badge">⭐ <span id="score-display">0</span></div>
+    </div>
+    <div class="word-card" id="word-card">
+      <div class="word-number" id="word-number">Word 1</div>
+      <button class="speak-btn" id="speak-btn">🔊</button>
+      <div class="german-word" id="german-word">—</div>
+      <div class="word-hint" id="word-hint">German → English</div>
+    </div>
+    <div class="choices" id="choices"></div>
+    <div class="feedback" id="feedback"></div>
+    <button class="next-btn" id="next-btn">Next word →</button>
+    <div class="dots-row" id="dots-row"></div>
+  </div>
+
+  <!-- RESULTS -->
+  <div id="results-screen">
+    <div class="results-emoji" id="results-emoji">🎉</div>
+    <div class="results-title" id="results-title">Meister!</div>
+    <div class="results-score" id="results-score"></div>
+    <button class="restart-btn" onclick="restartQuiz()">Nochmal spielen</button>
+  </div>
+
+</div>
+<script>
+const wordBank = [
+
+  // ── VERBS – DAILY LIFE ──
+  {de:"aufwachen",en:"to wake up",hint:"verb",decoys:["to fall asleep","to lie down","to dream"]},
+  {de:"sich anziehen",en:"to get dressed",hint:"verb",decoys:["to undress","to wash up","to shave"]},
+  {de:"sich beeilen",en:"to hurry",hint:"verb",decoys:["to slow down","to wait","to relax"]},
+  {de:"aufräumen",en:"to tidy up / to clean up",hint:"verb",decoys:["to decorate","to rearrange","to repair"]},
+  {de:"Wäsche waschen",en:"to do the laundry",hint:"verb",decoys:["to iron","to dry","to fold"]},
+  {de:"bügeln",en:"to iron",hint:"verb",decoys:["to wash","to fold","to hang"]},
+  {de:"kochen",en:"to cook",hint:"verb",decoys:["to bake only","to fry only","to serve"]},
+  {de:"bestellen",en:"to order",hint:"verb",decoys:["to cancel","to pay","to deliver"]},
+  {de:"bezahlen",en:"to pay",hint:"verb",decoys:["to borrow","to owe","to earn"]},
+  {de:"ausgeben",en:"to spend (money)",hint:"verb",decoys:["to save","to earn","to waste"]},
+  {de:"sparen",en:"to save (money)",hint:"verb",decoys:["to spend","to borrow","to donate"]},
+  {de:"leihen",en:"to borrow / to lend",hint:"verb",decoys:["to steal","to buy","to give away"]},
+  {de:"suchen",en:"to look for / to search",hint:"verb",decoys:["to find","to hide","to lose"]},
+  {de:"finden",en:"to find",hint:"verb",decoys:["to lose","to hide","to search"]},
+  {de:"verlieren",en:"to lose",hint:"verb",decoys:["to find","to keep","to save"]},
+  {de:"vergessen",en:"to forget",hint:"verb",decoys:["to remember","to remind","to record"]},
+  {de:"sich erinnern",en:"to remember / to recall",hint:"verb",decoys:["to forget","to imagine","to dream"]},
+  {de:"erklären",en:"to explain",hint:"verb",decoys:["to describe","to translate","to repeat"]},
+  {de:"übersetzen",en:"to translate",hint:"verb",decoys:["to read","to write","to speak"]},
+  {de:"raten",en:"to advise / to guess",hint:"verb",decoys:["to warn","to order","to permit"]},
+  {de:"erlauben",en:"to allow / to permit",hint:"verb",decoys:["to forbid","to force","to suggest"]},
+  {de:"verbieten",en:"to forbid / to prohibit",hint:"verb",decoys:["to allow","to suggest","to require"]},
+  {de:"ablehnen",en:"to refuse / to decline",hint:"verb",decoys:["to accept","to agree","to offer"]},
+  {de:"zustimmen",en:"to agree",hint:"verb",decoys:["to refuse","to deny","to argue"]},
+  {de:"streiten",en:"to argue / to quarrel",hint:"verb",decoys:["to agree","to discuss","to complain"]},
+  {de:"sich beschweren",en:"to complain",hint:"verb",decoys:["to praise","to explain","to ask"]},
+  {de:"loben",en:"to praise",hint:"verb",decoys:["to criticize","to ignore","to blame"]},
+  {de:"kritisieren",en:"to criticize",hint:"verb",decoys:["to praise","to accept","to defend"]},
+  {de:"besprechen",en:"to discuss",hint:"verb",decoys:["to argue","to decide","to ignore"]},
+  {de:"zugeben",en:"to admit",hint:"verb",decoys:["to deny","to hide","to forget"]},
+  {de:"erreichen",en:"to reach / to achieve",hint:"verb",decoys:["to attempt","to fail","to ignore"]},
+  {de:"vermeiden",en:"to avoid",hint:"verb",decoys:["to seek","to face","to accept"]},
+  {de:"warnen",en:"to warn",hint:"verb",decoys:["to prevent","to ask","to reassure"]},
+  {de:"scheitern",en:"to fail",hint:"verb",decoys:["to succeed","to attempt","to improve"]},
+  {de:"gelingen",en:"to succeed / to manage to",hint:"verb",decoys:["to fail","to try","to plan"]},
+
+  // ── VERBS – EMOTIONS & MENTAL STATES ──
+  {de:"sich freuen",en:"to be glad / to look forward to",hint:"verb",decoys:["to grieve","to worry","to complain"]},
+  {de:"traurig sein",en:"to feel sad",hint:"verb",decoys:["to rejoice","to worry","to get angry"]},
+  {de:"sich ärgern",en:"to get angry / to be annoyed",hint:"verb",decoys:["to calm down","to feel sad","to get scared"]},
+  {de:"Angst haben",en:"to be afraid / to fear",hint:"verb",decoys:["to be brave","to ignore","to dare"]},
+  {de:"sich schämen",en:"to feel ashamed",hint:"verb",decoys:["to feel confident","to feel proud","to feel relieved"]},
+  {de:"stolz sein",en:"to be proud",hint:"verb",decoys:["to be ashamed","to be jealous","to be modest"]},
+  {de:"beneiden",en:"to envy",hint:"verb",decoys:["to admire","to respect","to support"]},
+  {de:"beleidigt sein",en:"to be offended / to take offense",hint:"verb",decoys:["to forgive","to ignore","to understand"]},
+  {de:"vergeben",en:"to forgive",hint:"verb",decoys:["to punish","to blame","to accuse"]},
+  {de:"bereuen",en:"to regret",hint:"verb",decoys:["to celebrate","to forget","to accept"]},
+  {de:"sich sorgen",en:"to worry",hint:"verb",decoys:["to relax","to calm down","to sleep well"]},
+  {de:"sich beruhigen",en:"to calm down",hint:"verb",decoys:["to get anxious","to panic","to worry"]},
+  {de:"hoffen",en:"to hope",hint:"verb",decoys:["to despair","to expect","to wish"]},
+  {de:"vertrauen",en:"to trust",hint:"verb",decoys:["to distrust","to suspect","to fear"]},
+  {de:"verdächtigen",en:"to suspect",hint:"verb",decoys:["to trust","to confirm","to know"]},
+  {de:"bewundern",en:"to admire",hint:"verb",decoys:["to criticize","to ignore","to tolerate"]},
+  {de:"sich langweilen",en:"to be bored",hint:"verb",decoys:["to enjoy","to laugh","to entertain"]},
+  {de:"sich ärgern",en:"to get irritated",hint:"verb",decoys:["to calm down","to relax","to enjoy"]},
+  {de:"überrascht sein",en:"to be surprised",hint:"verb",decoys:["to be expected","to be bored","to be indifferent"]},
+  {de:"enttäuscht sein",en:"to be disappointed",hint:"verb",decoys:["to be pleased","to be excited","to be relieved"]},
+  {de:"träumen",en:"to dream",hint:"verb",decoys:["to sleep","to think","to plan"]},
+  {de:"sich verlieben",en:"to fall in love",hint:"verb",decoys:["to fall out","to get married","to flirt"]},
+  {de:"vermissen",en:"to miss someone",hint:"verb",decoys:["to forget","to avoid","to leave"]},
+  {de:"sich wohlfühlen",en:"to feel comfortable / at ease",hint:"verb",decoys:["to struggle","to suffer","to complain"]},
+  {de:"wagen",en:"to dare",hint:"verb",decoys:["to fear","to hesitate","to refuse"]},
+
+  // ── NOUNS – PEOPLE & SOCIETY ──
+  {de:"der Nachbar",en:"the neighbor",hint:"noun",decoys:["the stranger","the relative","the landlord"]},
+  {de:"der Zeuge",en:"the witness",hint:"noun",decoys:["the victim","the suspect","the judge"]},
+  {de:"der Beamte",en:"the civil servant / the official",hint:"noun",decoys:["the volunteer","the contractor","the manager"]},
+  {de:"der Journalist",en:"the journalist",hint:"noun",decoys:["the editor","the broadcaster","the professor"]},
+  {de:"der Feuerwehrmann",en:"the firefighter",hint:"noun",decoys:["the police officer","the soldier","the paramedic"]},
+  {de:"der Rentner",en:"the retiree / the pensioner",hint:"noun",decoys:["the student","the teenager","the employee"]},
+  {de:"das Paar",en:"the couple",hint:"noun",decoys:["the friendship","the group","the team"]},
+  {de:"das Waisenkind",en:"the orphan",hint:"noun",decoys:["the refugee","the widow","the volunteer"]},
+  {de:"der Ausländer",en:"the foreigner",hint:"noun",decoys:["the citizen","the native","the resident"]},
+  {de:"die Menge",en:"the crowd",hint:"noun",decoys:["the army","the audience","the committee"]},
+  {de:"die Gewerkschaft",en:"the labor union",hint:"noun",decoys:["the company","the association","the government"]},
+  {de:"der Verteidiger",en:"the defender / the advocate",hint:"noun",decoys:["the attacker","the judge","the observer"]},
+  {de:"der Erbe",en:"the heir",hint:"noun",decoys:["the owner","the donor","the creditor"]},
+  {de:"der Gast",en:"the guest",hint:"noun",decoys:["the tenant","the visitor","the neighbor"]},
+  {de:"die Krankenschwester",en:"the nurse",hint:"noun",decoys:["the doctor","the pharmacist","the surgeon"]},
+  {de:"die Umfrage",en:"the survey / the poll",hint:"noun",decoys:["the report","the census","the interview"]},
+  {de:"die Rede",en:"the speech",hint:"noun",decoys:["the argument","the discussion","the lecture"]},
+  {de:"die Demonstration",en:"the demonstration / the protest",hint:"noun",decoys:["the celebration","the election","the ceremony"]},
+  {de:"die Vereinbarung",en:"the agreement",hint:"noun",decoys:["the argument","the decision","the contract"]},
+  {de:"die Erinnerung",en:"the memory / the recollection",hint:"noun",decoys:["the dream","the regret","the reminder"]},
+  {de:"der Rat",en:"the advice / the council",hint:"noun",decoys:["the order","the decision","the warning"]},
+  {de:"der Brauch",en:"the custom / the tradition",hint:"noun",decoys:["the costume","the culture","the habit"]},
+  {de:"der Spitzname",en:"the nickname",hint:"noun",decoys:["the surname","the title","the alias"]},
+  {de:"die Lüge",en:"the lie",hint:"noun",decoys:["the truth","the secret","the rumor"]},
+  {de:"das Gerücht",en:"the rumor",hint:"noun",decoys:["the noise","the news","the gossip"]},
+  {de:"die Generation",en:"the generation",hint:"noun",decoys:["the century","the decade","the era"]},
+  {de:"der Bürger",en:"the citizen",hint:"noun",decoys:["the soldier","the resident","the foreigner"]},
+  {de:"der Flüchtling",en:"the refugee",hint:"noun",decoys:["the immigrant","the tourist","the traveler"]},
+
+  // ── NOUNS – HOME & EVERYDAY OBJECTS ──
+  {de:"die Schublade",en:"the drawer",hint:"noun",decoys:["the cabinet","the shelf","the closet"]},
+  {de:"das Kissen",en:"the pillow / the cushion",hint:"noun",decoys:["the blanket","the mattress","the sheet"]},
+  {de:"der Wasserhahn",en:"the faucet / the tap",hint:"noun",decoys:["the drain","the pipe","the valve"]},
+  {de:"der Kühlschrank",en:"the refrigerator",hint:"noun",decoys:["the freezer","the oven","the microwave"]},
+  {de:"die Steckdose",en:"the electrical outlet",hint:"noun",decoys:["the switch","the plug","the cord"]},
+  {de:"die Treppe",en:"the staircase",hint:"noun",decoys:["the elevator","the ramp","the corridor"]},
+  {de:"der Keller",en:"the basement / the cellar",hint:"noun",decoys:["the attic","the garage","the hallway"]},
+  {de:"die Decke",en:"the ceiling / the blanket",hint:"noun",decoys:["the floor","the wall","the foundation"]},
+  {de:"der Teppich",en:"the carpet / the rug",hint:"noun",decoys:["the curtain","the tile","the mat"]},
+  {de:"der Spiegel",en:"the mirror",hint:"noun",decoys:["the window","the painting","the frame"]},
+  {de:"der Schlüssel",en:"the key",hint:"noun",decoys:["the lock","the door","the handle"]},
+  {de:"die Klingel",en:"the doorbell",hint:"noun",decoys:["the lock","the knocker","the intercom"]},
+  {de:"der Müll",en:"the trash / the garbage",hint:"noun",decoys:["the dirt","the waste","the recycling"]},
+  {de:"der Kleiderbügel",en:"the clothes hanger",hint:"noun",decoys:["the shelf","the hook","the rack"]},
+  {de:"die Matratze",en:"the mattress",hint:"noun",decoys:["the pillow","the blanket","the bed frame"]},
+  {de:"die Badewanne",en:"the bathtub",hint:"noun",decoys:["the shower","the sink","the toilet"]},
+  {de:"der Lichtschalter",en:"the light switch",hint:"noun",decoys:["the plug","the fuse","the circuit breaker"]},
+  {de:"der Blumentopf",en:"the flowerpot",hint:"noun",decoys:["the vase","the tray","the basket"]},
+  {de:"die Ecke",en:"the corner",hint:"noun",decoys:["the edge","the angle","the side"]},
+  {de:"das Schloss",en:"the lock / the castle",hint:"noun",decoys:["the key","the handle","the bolt"]},
+  {de:"der Eimer",en:"the bucket",hint:"noun",decoys:["the barrel","the jar","the bin"]},
+  {de:"das Handtuch",en:"the towel",hint:"noun",decoys:["the cloth","the napkin","the sheet"]},
+  {de:"der Vorhang",en:"the curtain",hint:"noun",decoys:["the blind","the shade","the screen"]},
+  {de:"der Kochtopf",en:"the pot / the saucepan",hint:"noun",decoys:["the pan","the wok","the bowl"]},
+  {de:"die Bratpfanne",en:"the frying pan",hint:"noun",decoys:["the pot","the grill","the wok"]},
+
+  // ── NOUNS – NATURE & ENVIRONMENT ──
+  {de:"der Blitz",en:"the lightning",hint:"noun",decoys:["the thunder","the storm","the hail"]},
+  {de:"die Dürre",en:"the drought",hint:"noun",decoys:["the flood","the frost","the storm"]},
+  {de:"das Erdbeben",en:"the earthquake",hint:"noun",decoys:["the volcano","the tsunami","the landslide"]},
+  {de:"das Ufer",en:"the shore / the bank",hint:"noun",decoys:["the cliff","the beach","the valley"]},
+  {de:"das Moos",en:"the moss",hint:"noun",decoys:["the lichen","the fern","the weed"]},
+  {de:"das Blatt",en:"the leaf",hint:"noun",decoys:["the branch","the root","the bark"]},
+  {de:"die Pfütze",en:"the puddle",hint:"noun",decoys:["the pond","the lake","the stream"]},
+  {de:"der Busch",en:"the bush / the shrub",hint:"noun",decoys:["the tree","the flower","the cactus"]},
+  {de:"die Höhle",en:"the cave",hint:"noun",decoys:["the tunnel","the mine","the cliff"]},
+  {de:"die Wiese",en:"the meadow",hint:"noun",decoys:["the forest","the hill","the valley"]},
+  {de:"der Nebel",en:"the fog",hint:"noun",decoys:["the cloud","the mist","the haze"]},
+  {de:"der Hagel",en:"the hail",hint:"noun",decoys:["the sleet","the frost","the snow"]},
+  {de:"der Sturm",en:"the storm",hint:"noun",decoys:["the drizzle","the breeze","the hurricane"]},
+  {de:"der Sonnenaufgang",en:"the sunrise",hint:"noun",decoys:["the sunset","the dusk","the noon"]},
+  {de:"der Sonnenuntergang",en:"the sunset",hint:"noun",decoys:["the sunrise","the dawn","the twilight"]},
+  {de:"der Wasserfall",en:"the waterfall",hint:"noun",decoys:["the river","the stream","the rapids"]},
+  {de:"das Sumpfgebiet",en:"the swamp / the marsh",hint:"noun",decoys:["the lake","the pond","the lagoon"]},
+  {de:"die Ebene",en:"the plain / the flatland",hint:"noun",decoys:["the mountain","the valley","the plateau"]},
+  {de:"die Klippe",en:"the cliff",hint:"noun",decoys:["the rock","the dune","the hill"]},
+  {de:"die Gezeiten",en:"the tide",hint:"noun",decoys:["the current","the wave","the surge"]},
+  {de:"der Vulkan",en:"the volcano",hint:"noun",decoys:["the mountain","the geyser","the crater"]},
+  {de:"die Schlucht",en:"the ravine / the gorge",hint:"noun",decoys:["the valley","the trench","the ditch"]},
+
+  // ── NOUNS – WORK & MONEY ──
+  {de:"das Gehalt",en:"the salary / the wage",hint:"noun",decoys:["the bonus","the tip","the pension"]},
+  {de:"die Frist",en:"the deadline",hint:"noun",decoys:["the plan","the period","the limit"]},
+  {de:"die Rechnung",en:"the bill / the invoice",hint:"noun",decoys:["the receipt","the contract","the estimate"]},
+  {de:"der Geschäftspartner",en:"the business partner",hint:"noun",decoys:["the employee","the client","the shareholder"]},
+  {de:"die Besprechung",en:"the meeting",hint:"noun",decoys:["the seminar","the lecture","the workshop"]},
+  {de:"der Bericht",en:"the report",hint:"noun",decoys:["the form","the notice","the summary"]},
+  {de:"die Zentrale",en:"the headquarters",hint:"noun",decoys:["the branch","the office","the factory"]},
+  {de:"die Beförderung",en:"the promotion",hint:"noun",decoys:["the bonus","the transfer","the demotion"]},
+  {de:"die Entlassung",en:"the dismissal / the layoff",hint:"noun",decoys:["the resignation","the retirement","the suspension"]},
+  {de:"die Schulden",en:"the debt",hint:"noun",decoys:["the loan","the tax","the fine"]},
+  {de:"das Darlehen",en:"the loan",hint:"noun",decoys:["the debt","the savings","the investment"]},
+  {de:"die Steuer",en:"the tax",hint:"noun",decoys:["the fine","the fee","the duty"]},
+  {de:"der Gewinn",en:"the profit",hint:"noun",decoys:["the loss","the expense","the revenue"]},
+  {de:"der Verlust",en:"the loss",hint:"noun",decoys:["the profit","the gain","the expense"]},
+  {de:"der Vertrag",en:"the contract",hint:"noun",decoys:["the policy","the permit","the clause"]},
+  {de:"der Streik",en:"the strike",hint:"noun",decoys:["the protest","the boycott","the walkout"]},
+  {de:"die Stelle",en:"the position / the job",hint:"noun",decoys:["the career","the task","the role"]},
+  {de:"die Filiale",en:"the branch (of a company)",hint:"noun",decoys:["the headquarters","the warehouse","the office"]},
+  {de:"der Arbeitstag",en:"the workday",hint:"noun",decoys:["the schedule","the break","the overtime"]},
+  {de:"das Lager",en:"the warehouse / the storage",hint:"noun",decoys:["the store","the factory","the depot"]},
+  {de:"der Lieferant",en:"the supplier",hint:"noun",decoys:["the buyer","the distributor","the retailer"]},
+  {de:"das Budget",en:"the budget",hint:"noun",decoys:["the estimate","the forecast","the plan"]},
+
+  // ── ADJECTIVES ──
+  {de:"stolz",en:"proud",hint:"adjective",decoys:["ashamed","jealous","stubborn"]},
+  {de:"eifersüchtig",en:"jealous",hint:"adjective",decoys:["proud","shy","angry"]},
+  {de:"stur",en:"stubborn",hint:"adjective",decoys:["flexible","patient","calm"]},
+  {de:"naiv",en:"naive",hint:"adjective",decoys:["cunning","wise","suspicious"]},
+  {de:"schlau",en:"clever / cunning",hint:"adjective",decoys:["naive","honest","careless"]},
+  {de:"nett",en:"kind / nice",hint:"adjective",decoys:["mean","cold","distant"]},
+  {de:"geizig",en:"stingy / miserly",hint:"adjective",decoys:["generous","thrifty","wealthy"]},
+  {de:"großzügig",en:"generous",hint:"adjective",decoys:["stingy","selfish","greedy"]},
+  {de:"faul",en:"lazy",hint:"adjective",decoys:["hardworking","active","energetic"]},
+  {de:"fleißig",en:"hardworking / diligent",hint:"adjective",decoys:["lazy","inactive","slow"]},
+  {de:"mutig",en:"brave / courageous",hint:"adjective",decoys:["cowardly","reckless","timid"]},
+  {de:"feige",en:"cowardly",hint:"adjective",decoys:["brave","cautious","bold"]},
+  {de:"ehrlich",en:"honest",hint:"adjective",decoys:["dishonest","deceptive","corrupt"]},
+  {de:"verlogen",en:"dishonest / deceitful",hint:"adjective",decoys:["honest","truthful","sincere"]},
+  {de:"neugierig",en:"curious",hint:"adjective",decoys:["indifferent","bored","distracted"]},
+  {de:"vernünftig",en:"sensible / reasonable",hint:"adjective",decoys:["foolish","reckless","impulsive"]},
+  {de:"nachlässig",en:"careless / negligent",hint:"adjective",decoys:["careful","thorough","attentive"]},
+  {de:"sorgfältig",en:"careful / thorough",hint:"adjective",decoys:["messy","careless","inattentive"]},
+  {de:"erschöpft",en:"exhausted",hint:"adjective",decoys:["energized","rested","refreshed"]},
+  {de:"verängstigt",en:"scared / frightened",hint:"adjective",decoys:["brave","calm","excited"]},
+  {de:"erleichtert",en:"relieved",hint:"adjective",decoys:["worried","tense","stressed"]},
+  {de:"enttäuscht",en:"disappointed",hint:"adjective",decoys:["satisfied","pleased","excited"]},
+  {de:"zufrieden",en:"satisfied / content",hint:"adjective",decoys:["disappointed","bored","dissatisfied"]},
+  {de:"ungeduldig",en:"impatient",hint:"adjective",decoys:["patient","calm","relaxed"]},
+  {de:"verfügbar",en:"available",hint:"adjective",decoys:["busy","unavailable","occupied"]},
+  {de:"geeignet",en:"suitable / appropriate",hint:"adjective",decoys:["inadequate","excessive","unsuitable"]},
+  {de:"unerwartet",en:"unexpected",hint:"adjective",decoys:["expected","planned","predictable"]},
+  {de:"fähig",en:"capable / able",hint:"adjective",decoys:["incapable","clumsy","helpless"]},
+  {de:"mächtig",en:"powerful",hint:"adjective",decoys:["weak","fragile","helpless"]},
+  {de:"alltäglich",en:"everyday / ordinary",hint:"adjective",decoys:["occasional","rare","special"]},
+  {de:"höflich",en:"polite",hint:"adjective",decoys:["rude","arrogant","aggressive"]},
+  {de:"unhöflich",en:"rude / impolite",hint:"adjective",decoys:["polite","gentle","kind"]},
+  {de:"bescheiden",en:"modest / humble",hint:"adjective",decoys:["arrogant","proud","showy"]},
+
+  // ── ADVERBS, CONNECTORS & PHRASES ──
+  {de:"trotzdem",en:"despite / nevertheless",hint:"adverb",decoys:["because of","therefore","instead"]},
+  {de:"außerdem",en:"furthermore / in addition",hint:"adverb",decoys:["however","instead","otherwise"]},
+  {de:"andererseits",en:"on the other hand",hint:"phrase",decoys:["in conclusion","in summary","for example"]},
+  {de:"was … betrifft",en:"as for / regarding",hint:"phrase",decoys:["in order to","instead of","according to"]},
+  {de:"deshalb",en:"therefore / that is why",hint:"adverb",decoys:["however","meanwhile","nevertheless"]},
+  {de:"oft",en:"often",hint:"adverb",decoys:["rarely","always","never"]},
+  {de:"manchmal",en:"sometimes",hint:"adverb",decoys:["always","never","often"]},
+  {de:"selten",en:"rarely / seldom",hint:"adverb",decoys:["often","always","usually"]},
+  {de:"sofort",en:"right away / immediately",hint:"adverb",decoys:["later on","eventually","gradually"]},
+  {de:"plötzlich",en:"suddenly",hint:"adverb",decoys:["slowly","gradually","eventually"]},
+  {de:"eigentlich",en:"actually / really",hint:"adverb",decoys:["in theory","in general","in practice"]},
+  {de:"letztendlich",en:"in the end / ultimately",hint:"adverb",decoys:["right away","at first","in the beginning"]},
+  {de:"vorausgesetzt",en:"provided that",hint:"conjunction",decoys:["in case","even though","as soon as"]},
+  {de:"da",en:"since / because / there",hint:"conjunction",decoys:["unless","although","even if"]},
+  {de:"auf diese Weise",en:"in this way / thus",hint:"phrase",decoys:["on the contrary","instead","otherwise"]},
+  {de:"obwohl",en:"although / even though",hint:"conjunction",decoys:["because","since","unless"]},
+  {de:"kaum",en:"barely / hardly",hint:"adverb",decoys:["already","still","yet"]},
+  {de:"noch",en:"still / yet",hint:"adverb",decoys:["already","no longer","soon"]},
+  {de:"sobald",en:"as soon as",hint:"conjunction",decoys:["as long as","in case","unless"]},
+  {de:"inzwischen",en:"meanwhile / in the meantime",hint:"adverb",decoys:["therefore","afterwards","instead"]},
+  {de:"dennoch",en:"nevertheless / however",hint:"adverb",decoys:["therefore","additionally","similarly"]},
+  {de:"hingegen",en:"whereas / on the other hand",hint:"adverb",decoys:["therefore","additionally","finally"]},
+
+  // ── IDIOMS & SET PHRASES ──
+  {de:"die Nase voll haben",en:"to be fed up",hint:"phrase",decoys:["to be satisfied","to be fond of","to be proud of"]},
+  {de:"Lust haben auf",en:"to feel like / to want to",hint:"phrase",decoys:["to be afraid of","to be tired of","to be capable of"]},
+  {de:"durchführen",en:"to carry out / to accomplish",hint:"phrase",decoys:["to give up","to put aside","to abandon"]},
+  {de:"aufpassen",en:"to pay attention / to watch out",hint:"phrase",decoys:["to make a note","to ignore","to pretend"]},
+  {de:"berücksichtigen",en:"to take into account",hint:"phrase",decoys:["to count on","to forget about","to disagree with"]},
+  {de:"einen guten Eindruck machen",en:"to make a good impression",hint:"phrase",decoys:["to fail to impress","to embarrass oneself","to be ignored"]},
+  {de:"auf dem Laufenden sein",en:"to be up to date / to be aware",hint:"phrase",decoys:["to fall behind","to be confused","to be uninformed"]},
+  {de:"auf einmal",en:"all of a sudden",hint:"phrase",decoys:["gradually","repeatedly","eventually"]},
+  {de:"vielleicht",en:"maybe / perhaps",hint:"adverb",decoys:["definitely","certainly","absolutely"]},
+  {de:"im Sinn haben",en:"to have in mind",hint:"phrase",decoys:["to forget","to lose track","to change one's mind"]},
+  {de:"sich Illusionen machen",en:"to have illusions / to kid oneself",hint:"phrase",decoys:["to face reality","to feel hopeless","to make plans"]},
+  {de:"keine Rolle spielen",en:"to not matter",hint:"phrase",decoys:["to matter a lot","to be important","to be crucial"]},
+  {de:"absichtlich",en:"on purpose / deliberately",hint:"adverb",decoys:["by accident","in a hurry","without thinking"]},
+  {de:"überhaupt nicht",en:"not at all",hint:"phrase",decoys:["completely","partly","to some extent"]},
+  {de:"abgemacht",en:"agreed / it's a deal",hint:"phrase",decoys:["in doubt","in disagreement","in question"]},
+  {de:"rechtzeitig",en:"in time / on time",hint:"adverb",decoys:["late","too early","ahead of schedule"]},
+  {de:"fehl am Platz",en:"out of place / inappropriate",hint:"phrase",decoys:["fitting in","perfectly suited","at the right time"]},
+  {de:"im Grunde",en:"deep down / basically",hint:"phrase",decoys:["on the surface","in the end","at first"]},
+  {de:"Recht haben",en:"to be right",hint:"phrase",decoys:["to be wrong","to have a reason","to make sense"]},
+  {de:"den Kopf verlieren",en:"to lose one's head / to panic",hint:"phrase",decoys:["to stay calm","to think clearly","to take charge"]},
+  {de:"Verantwortung übernehmen",en:"to take responsibility",hint:"phrase",decoys:["to avoid blame","to share credit","to give orders"]},
+  {de:"seitdem",en:"since then / ever since",hint:"adverb",decoys:["before that","until now","right away"]},
+  {de:"im Gegensatz zu",en:"unlike / in contrast to",hint:"phrase",decoys:["similar to","the same as","along with"]},
+  {de:"zumindest",en:"at least",hint:"phrase",decoys:["at most","no more than","as much as"]},
+
+  // ── NOUNS – ABSTRACT & GENERAL ──
+  {de:"die Gewohnheit",en:"the habit",hint:"noun",decoys:["the custom","the tradition","the rule"]},
+  {de:"die Fähigkeit",en:"the skill / the ability",hint:"noun",decoys:["the talent","the knowledge","the competence"]},
+  {de:"die Erfahrung",en:"the experience",hint:"noun",decoys:["the experiment","the example","the expertise"]},
+  {de:"das Wissen",en:"the knowledge",hint:"noun",decoys:["the skill","the wisdom","the information"]},
+  {de:"die Meinung",en:"the opinion",hint:"noun",decoys:["the fact","the belief","the theory"]},
+  {de:"die Möglichkeit",en:"the opportunity / the possibility",hint:"noun",decoys:["the ability","the permission","the advantage"]},
+  {de:"die Entscheidung",en:"the decision",hint:"noun",decoys:["the problem","the question","the plan"]},
+  {de:"der Grund",en:"the reason / the cause",hint:"noun",decoys:["the result","the effect","the purpose"]},
+  {de:"die Folge",en:"the consequence",hint:"noun",decoys:["the reason","the cause","the problem"]},
+  {de:"der Vorteil",en:"the advantage",hint:"noun",decoys:["the disadvantage","the obstacle","the risk"]},
+  {de:"der Nachteil",en:"the disadvantage / the drawback",hint:"noun",decoys:["the advantage","the benefit","the strength"]},
+  {de:"das Ziel",en:"the goal / the aim",hint:"noun",decoys:["the plan","the dream","the wish"]},
+  {de:"die Aufgabe",en:"the task / the assignment",hint:"noun",decoys:["the goal","the result","the challenge"]},
+  {de:"die Anstrengung",en:"the effort",hint:"noun",decoys:["the result","the progress","the attempt"]},
+  {de:"der Erfolg",en:"the success",hint:"noun",decoys:["the failure","the luck","the progress"]},
+  {de:"der Fehler",en:"the mistake / the error",hint:"noun",decoys:["the accident","the problem","the failure"]},
+  {de:"die Veränderung",en:"the change",hint:"noun",decoys:["the improvement","the reform","the shift"]},
+  {de:"die Entwicklung",en:"the development",hint:"noun",decoys:["the growth","the progress","the change"]},
+  {de:"der Einfluss",en:"the influence",hint:"noun",decoys:["the effect","the power","the control"]},
+  {de:"die Verbindung",en:"the connection / the link",hint:"noun",decoys:["the relationship","the network","the contact"]},
+  {de:"die Beziehung",en:"the relationship",hint:"noun",decoys:["the connection","the behavior","the feeling"]},
+  {de:"die Frage",en:"the question / the issue",hint:"noun",decoys:["the answer","the problem","the topic"]},
+  {de:"die Antwort",en:"the answer / the response",hint:"noun",decoys:["the question","the solution","the reply"]},
+  {de:"das Recht",en:"the right / the law",hint:"noun",decoys:["the duty","the permission","the privilege"]},
+  {de:"die Pflicht",en:"the duty / the obligation",hint:"noun",decoys:["the right","the privilege","the freedom"]},
+  {de:"die Regel",en:"the rule",hint:"noun",decoys:["the law","the norm","the regulation"]},
+  {de:"das Gesetz",en:"the law",hint:"noun",decoys:["the rule","the regulation","the order"]},
+  {de:"die Herausforderung",en:"the challenge",hint:"noun",decoys:["the problem","the obstacle","the difficulty"]},
+];
+
+let audioCtx=null;
+function unlockAudio(){
+  if(audioCtx)return;
+  audioCtx=new(window.AudioContext||window.webkitAudioContext)();
+  const buf=audioCtx.createBuffer(1,1,22050);
+  const src=audioCtx.createBufferSource();
+  src.buffer=buf;src.connect(audioCtx.destination);src.start(0);
+}
+function playTone(type){
+  if(!audioCtx)return;
+  if(audioCtx.state==='suspended')audioCtx.resume();
+  const ctx=audioCtx,now=ctx.currentTime;
+  if(type==='correct'){
+    [523.25,659.25,783.99].forEach((freq,i)=>{
+      const o=ctx.createOscillator(),g=ctx.createGain();
+      o.connect(g);g.connect(ctx.destination);
+      o.type='sine';
+      o.frequency.setValueAtTime(freq,now+i*0.12);
+      g.gain.setValueAtTime(0.28,now+i*0.12);
+      g.gain.exponentialRampToValueAtTime(0.001,now+i*0.12+0.35);
+      o.start(now+i*0.12);o.stop(now+i*0.12+0.4);
+    });
+  }else{
+    const o=ctx.createOscillator(),g=ctx.createGain();
+    o.connect(g);g.connect(ctx.destination);
+    o.type='sawtooth';
+    o.frequency.setValueAtTime(300,now);
+    o.frequency.exponentialRampToValueAtTime(160,now+0.4);
+    g.gain.setValueAtTime(0.18,now);
+    g.gain.exponentialRampToValueAtTime(0.001,now+0.5);
+    o.start(now);o.stop(now+0.55);
+  }
+}
+let voices=[];
+function loadVoices(){voices=window.speechSynthesis?speechSynthesis.getVoices():[];}
+function speakGerman(text){
+  if(!window.speechSynthesis)return;
+  speechSynthesis.cancel();
+  const u=new SpeechSynthesisUtterance(text);
+  u.lang='de-DE';u.rate=0.88;u.pitch=1.0;
+  if(!voices.length)loadVoices();
+  const v=voices.find(v=>v.lang==='de-DE'||v.lang==='de-AT'||v.lang==='de-CH')
+         ||voices.find(v=>v.lang.startsWith('de'));
+  if(v)u.voice=v;
+  speechSynthesis.speak(u);
+}
+let questions=[],current=0,score=0,answered=false;
+function shuffle(a){
+  a=[...a];
+  for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];}
+  return a;
+}
+document.getElementById('start-btn').addEventListener('click',()=>{
+  unlockAudio();loadVoices();
+  document.getElementById('splash-screen').style.display='none';
+  document.getElementById('quiz-screen').style.display='block';
+  initQuiz();
+});
+function initQuiz(){
+  questions=shuffle(wordBank).slice(0,20);
+  current=0;score=0;answered=false;
+  buildDots();loadQuestion();
+}
+function restartQuiz(){
+  document.getElementById('results-screen').style.display='none';
+  document.getElementById('quiz-screen').style.display='block';
+  initQuiz();
+}
+function buildDots(){
+  const row=document.getElementById('dots-row');row.innerHTML='';
+  for(let i=0;i<20;i++){const d=document.createElement('div');d.className='dot';d.id='dot-'+i;row.appendChild(d);}
+}
+function loadQuestion(){
+  answered=false;
+  const q=questions[current];
+  document.getElementById('progress-bar').style.width=(current/20*100)+'%';
+  document.getElementById('progress-label').textContent=current+' / 20';
+  document.getElementById('score-display').textContent=score;
+  document.getElementById('word-number').textContent='Word '+(current+1);
+  document.getElementById('german-word').textContent=q.de;
+  document.getElementById('word-hint').textContent=q.hint;
+  document.getElementById('word-card').className='word-card';
+  const fb=document.getElementById('feedback');fb.textContent='';fb.className='feedback';
+  const choices=shuffle([q.en,...q.decoys.slice(0,3)]);
+  const el=document.getElementById('choices');el.innerHTML='';
+  choices.forEach(c=>{
+    const b=document.createElement('button');
+    b.className='choice-btn';b.textContent=c;
+    b.addEventListener('click',()=>handleAnswer(c,q.en,b));
+    el.appendChild(b);
+  });
+  document.getElementById('next-btn').className='next-btn';
+  setTimeout(()=>speakGerman(q.de),350);
+}
+function handleAnswer(chosen,correct,btn){
+  if(answered)return;answered=true;
+  const ok=chosen===correct;
+  const card=document.getElementById('word-card');
+  const fb=document.getElementById('feedback');
+  const nb=document.getElementById('next-btn');
+  document.querySelectorAll('.choice-btn').forEach(b=>{
+    b.disabled=true;
+    if(b.textContent===correct)b.classList.add('correct');
+  });
+  if(ok){
+    score++;btn.classList.add('correct');
+    card.classList.add('correct','pulse-correct');
+    fb.textContent='✓ Richtig! Gut gemacht!';fb.className='feedback show-correct';
+  }else{
+    btn.classList.add('wrong');card.classList.add('wrong','shake');
+    fb.textContent='✗ Incorrect. The answer is: "'+correct+'"';fb.className='feedback show-wrong';
+    setTimeout(()=>card.classList.remove('shake'),400);
+  }
+  playTone(ok?'correct':'wrong');
+  const dot=document.getElementById('dot-'+current);
+  if(dot)dot.className='dot '+(ok?'correct':'wrong');
+  document.getElementById('score-display').textContent=score;
+  nb.className='next-btn visible';
+  nb.textContent=current===19?'See Results →':'Next word →';
+}
+document.getElementById('next-btn').addEventListener('click',()=>{
+  current++;current>=20?showResults():loadQuestion();
+});
+document.getElementById('speak-btn').addEventListener('click',()=>{
+  const w=document.getElementById('german-word').textContent;
+  if(w&&w!=='—')speakGerman(w);
+});
+function showResults(){
+  document.getElementById('quiz-screen').style.display='none';
+  document.getElementById('results-screen').style.display='block';
+  const champ=score>=17;
+  document.getElementById('results-emoji').textContent=champ?'🏆':score>=12?'💪':'📚';
+  const t=document.getElementById('results-title');
+  t.textContent=champ?'Meister!':score>=12?'Gut gemacht!':'Weiter üben!';
+  t.className='results-title'+(champ?' results-champ':'');
+  const msg=champ?"Outstanding! You're a true German champion 🌟":score>=12?"Solid work — keep building on this!":"Keep studying — you'll get there!";
+  document.getElementById('results-score').innerHTML='You got <strong>'+score+' / 20</strong> correct.<br><small style="color:var(--muted)">'+msg+'</small>';
+}
+if(window.speechSynthesis){speechSynthesis.onvoiceschanged=loadVoices;loadVoices();}
+</script>
+</body>
+</html>

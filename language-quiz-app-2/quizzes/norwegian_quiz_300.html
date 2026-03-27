@@ -1,0 +1,579 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>Norsk — Norwegian Quiz</title>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:wght@700;900&family=Inter:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg:#0d1117;--card:#161c26;--border:#243040;
+    --accent:#ba2022;--accent2:#4a7ab5;--accent3:#f5f5f0;
+    --correct:#4be87e;--wrong:#e84b4b;
+    --text:#e8edf5;--muted:#6b7a8d;--radius:12px;
+  }
+  *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
+  body{background:var(--bg);color:var(--text);font-family:'Inter',sans-serif;min-height:100vh;min-height:-webkit-fill-available;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:20px;overflow-x:hidden;}
+  body::before{content:'';position:fixed;inset:0;background:
+    radial-gradient(ellipse 65% 45% at 10% 10%,rgba(186,32,34,0.07) 0%,transparent 55%),
+    radial-gradient(ellipse 55% 45% at 90% 85%,rgba(74,122,181,0.07) 0%,transparent 55%);
+    pointer-events:none;z-index:0;}
+  .container{position:relative;z-index:1;width:100%;max-width:560px;}
+
+  /* SPLASH */
+  #splash-screen{text-align:center;padding:20px;}
+  .splash-logo{font-family:'Fraunces',serif;font-size:clamp(2.8rem,10vw,4.4rem);font-weight:900;letter-spacing:-2px;line-height:1;margin-bottom:6px;}
+  .splash-logo .n{color:var(--accent);}
+  .splash-logo .o{color:var(--accent2);}
+  .splash-tagline{font-family:'Inter',sans-serif;font-size:0.78rem;color:var(--muted);letter-spacing:0.2em;text-transform:uppercase;margin-bottom:32px;}
+  .splash-features{list-style:none;text-align:left;display:inline-flex;flex-direction:column;gap:14px;margin-bottom:38px;background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:22px 26px;width:100%;max-width:380px;}
+  .splash-features li{display:flex;align-items:center;gap:12px;font-size:0.93rem;color:var(--text);}
+  .splash-features li .icon{font-size:1.3rem;width:28px;flex-shrink:0;text-align:center;}
+  .start-btn{background:var(--accent);color:#fff;border:none;border-radius:var(--radius);font-family:'Inter',sans-serif;font-size:1.05rem;font-weight:500;padding:18px 56px;cursor:pointer;letter-spacing:0.03em;display:inline-block;}
+  .start-btn:active{transform:scale(0.96);background:#911819;}
+  .splash-note{color:var(--muted);font-size:0.74rem;margin-top:14px;}
+
+  /* HEADER */
+  header{text-align:center;margin-bottom:24px;}
+  .logo{font-family:'Fraunces',serif;font-size:clamp(1.8rem,5vw,2.5rem);font-weight:900;letter-spacing:-1px;}
+  .logo .n{color:var(--accent);}
+  .logo .o{color:var(--accent2);}
+  .subtitle{color:var(--muted);font-size:0.72rem;letter-spacing:0.16em;text-transform:uppercase;margin-top:4px;}
+
+  /* PROGRESS */
+  .progress-row{display:flex;align-items:center;gap:10px;margin-bottom:16px;}
+  .progress-bar-wrap{flex:1;height:4px;background:var(--border);border-radius:99px;overflow:hidden;}
+  .progress-bar-fill{height:100%;background:linear-gradient(90deg,var(--accent),var(--accent2));border-radius:99px;transition:width 0.5s cubic-bezier(.4,0,.2,1);}
+  .progress-label{font-size:0.72rem;color:var(--muted);white-space:nowrap;}
+  .score-badge{background:var(--card);border:1px solid var(--border);border-radius:99px;padding:4px 12px;font-size:0.78rem;font-weight:500;color:var(--accent2);white-space:nowrap;}
+
+  /* WORD CARD */
+  .word-card{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:34px 24px 24px;margin-bottom:14px;text-align:center;position:relative;transition:border-color 0.3s;}
+  .word-card.correct{border-color:var(--correct);}
+  .word-card.wrong{border-color:var(--wrong);}
+  .word-number{position:absolute;top:12px;left:16px;font-size:0.65rem;color:var(--muted);letter-spacing:0.1em;text-transform:uppercase;}
+  .speak-btn{position:absolute;top:10px;right:14px;background:none;border:1px solid var(--border);border-radius:99px;color:var(--accent2);font-size:1rem;cursor:pointer;padding:4px 10px;line-height:1.5;}
+  .speak-btn:active{background:rgba(74,122,181,0.15);border-color:var(--accent2);}
+  .norsk-word{font-family:'Fraunces',serif;font-size:clamp(1.8rem,7vw,3rem);font-weight:700;letter-spacing:-0.5px;margin:10px 0 6px;line-height:1.15;}
+  .word-hint{font-size:0.72rem;color:var(--muted);letter-spacing:0.1em;text-transform:uppercase;}
+
+  /* CHOICES */
+  .choices{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin-bottom:12px;}
+  .choice-btn{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);color:var(--text);font-family:'Inter',sans-serif;font-size:0.88rem;font-weight:400;padding:16px 10px;cursor:pointer;text-align:center;line-height:1.3;}
+  .choice-btn:active:not(:disabled){background:rgba(74,122,181,0.08);border-color:var(--accent2);transform:scale(0.97);}
+  .choice-btn.correct{background:rgba(75,232,126,0.12);border-color:var(--correct);color:var(--correct);font-weight:500;}
+  .choice-btn.wrong{background:rgba(232,75,75,0.12);border-color:var(--wrong);color:var(--wrong);font-weight:500;}
+  .choice-btn:disabled{cursor:default;}
+
+  /* FEEDBACK */
+  .feedback{min-height:34px;text-align:center;font-size:0.87rem;color:var(--muted);margin-bottom:10px;}
+  .feedback.show-correct{color:var(--correct);font-weight:500;}
+  .feedback.show-wrong{color:var(--wrong);font-weight:500;}
+
+  /* NEXT */
+  .next-btn{width:100%;background:var(--accent);color:#fff;border:none;border-radius:var(--radius);font-family:'Inter',sans-serif;font-size:0.95rem;font-weight:500;padding:16px;cursor:pointer;display:none;}
+  .next-btn:active{background:#911819;transform:scale(0.98);}
+  .next-btn.visible{display:block;}
+
+  /* DOTS */
+  .dots-row{display:flex;gap:5px;flex-wrap:wrap;justify-content:center;margin-top:12px;}
+  .dot{width:10px;height:10px;border-radius:50%;background:var(--border);transition:background 0.3s;}
+  .dot.correct{background:var(--correct);}
+  .dot.wrong{background:var(--wrong);}
+
+  /* RESULTS */
+  #results-screen{display:none;text-align:center;padding:30px 20px;}
+  .results-emoji{font-size:5rem;margin-bottom:14px;animation:pop 0.5s cubic-bezier(.4,0,.2,1);}
+  @keyframes pop{0%{transform:scale(0.3);opacity:0;}70%{transform:scale(1.15);}100%{transform:scale(1);opacity:1;}}
+  .results-title{font-family:'Fraunces',serif;font-size:2.2rem;font-weight:900;margin-bottom:8px;letter-spacing:-1px;}
+  .results-champ{color:var(--accent);}
+  .results-score{font-size:1.05rem;color:var(--muted);margin-bottom:28px;line-height:1.8;}
+  .results-score strong{color:var(--text);font-size:1.4rem;}
+  .restart-btn{background:var(--accent);color:#fff;border:none;border-radius:var(--radius);font-family:'Inter',sans-serif;font-size:1rem;font-weight:500;padding:16px 40px;cursor:pointer;}
+  .restart-btn:active{background:#911819;}
+
+  @keyframes shake{0%,100%{transform:translateX(0)}20%{transform:translateX(-6px)}40%{transform:translateX(6px)}60%{transform:translateX(-4px)}80%{transform:translateX(4px)}}
+  .shake{animation:shake 0.35s ease;}
+  @keyframes pulse-correct{0%{box-shadow:0 0 0 0 rgba(75,232,126,0.4)}70%{box-shadow:0 0 0 12px rgba(75,232,126,0)}100%{box-shadow:0 0 0 0 rgba(75,232,126,0)}}
+  .pulse-correct{animation:pulse-correct 0.5s ease;}
+</style>
+</head>
+<body>
+<div class="container">
+
+  <!-- SPLASH -->
+  <div id="splash-screen">
+    <div class="splash-logo"><span class="n">N</span><span class="o">o</span>rsk</div>
+    <div class="splash-tagline">Intermediate Vocabulary Quiz</div>
+    <ul class="splash-features">
+      <li><span class="icon">🇳🇴</span> 300 intermediate Norwegian words</li>
+      <li><span class="icon">🔊</span> Spoken aloud in Norwegian</li>
+      <li><span class="icon">🎵</span> Sound feedback on every answer</li>
+      <li><span class="icon">🏆</span> Score 17+ out of 20 and earn Mester!</li>
+    </ul>
+    <button class="start-btn" id="start-btn">Begynn! &nbsp;→</button>
+    <div class="splash-note">Tap to unlock audio &amp; begin</div>
+  </div>
+
+  <!-- QUIZ -->
+  <div id="quiz-screen" style="display:none">
+    <header>
+      <div class="logo"><span class="n">N</span><span class="o">o</span>rsk</div>
+      <div class="subtitle">Intermediate Vocabulary Quiz</div>
+    </header>
+    <div class="progress-row">
+      <div class="progress-bar-wrap"><div class="progress-bar-fill" id="progress-bar" style="width:0%"></div></div>
+      <div class="progress-label" id="progress-label">0 / 20</div>
+      <div class="score-badge">⭐ <span id="score-display">0</span></div>
+    </div>
+    <div class="word-card" id="word-card">
+      <div class="word-number" id="word-number">Word 1</div>
+      <button class="speak-btn" id="speak-btn">🔊</button>
+      <div class="norsk-word" id="norsk-word">—</div>
+      <div class="word-hint" id="word-hint">Norwegian → English</div>
+    </div>
+    <div class="choices" id="choices"></div>
+    <div class="feedback" id="feedback"></div>
+    <button class="next-btn" id="next-btn">Next word →</button>
+    <div class="dots-row" id="dots-row"></div>
+  </div>
+
+  <!-- RESULTS -->
+  <div id="results-screen">
+    <div class="results-emoji" id="results-emoji">🎉</div>
+    <div class="results-title" id="results-title">Mester!</div>
+    <div class="results-score" id="results-score"></div>
+    <button class="restart-btn" onclick="restartQuiz()">Spill igjen</button>
+  </div>
+
+</div>
+<script>
+const wordBank = [
+
+  // ── VERBS – DAILY LIFE ──
+  {no:"å spise frokost",en:"to eat breakfast",hint:"verb",decoys:["to eat lunch","to eat dinner","to skip a meal"]},
+  {no:"å spise lunsj",en:"to eat lunch",hint:"verb",decoys:["to eat breakfast","to eat dinner","to fast"]},
+  {no:"å våkne",en:"to wake up",hint:"verb",decoys:["to fall asleep","to lie down","to dream"]},
+  {no:"å kle på seg",en:"to get dressed",hint:"verb",decoys:["to undress","to wash up","to shave"]},
+  {no:"å komme for sent",en:"to be late",hint:"verb",decoys:["to arrive early","to hurry","to wait"]},
+  {no:"å skynde seg",en:"to hurry",hint:"verb",decoys:["to slow down","to wait","to relax"]},
+  {no:"å rydde opp",en:"to tidy up / to clean up",hint:"verb",decoys:["to decorate","to rearrange","to repair"]},
+  {no:"å vaske klær",en:"to do laundry",hint:"verb",decoys:["to iron","to dry","to fold"]},
+  {no:"å stryke",en:"to iron",hint:"verb",decoys:["to wash","to fold","to hang"]},
+  {no:"å lage mat",en:"to cook / to make food",hint:"verb",decoys:["to bake only","to fry only","to serve"]},
+  {no:"å bestille",en:"to order",hint:"verb",decoys:["to cancel","to pay","to deliver"]},
+  {no:"å betale",en:"to pay",hint:"verb",decoys:["to borrow","to owe","to earn"]},
+  {no:"å bruke penger",en:"to spend money",hint:"verb",decoys:["to save","to earn","to waste"]},
+  {no:"å spare",en:"to save (money)",hint:"verb",decoys:["to spend","to borrow","to donate"]},
+  {no:"å låne",en:"to borrow / to lend",hint:"verb",decoys:["to steal","to buy","to give away"]},
+  {no:"å lete etter",en:"to look for / to search for",hint:"verb",decoys:["to find","to hide","to lose"]},
+  {no:"å finne",en:"to find",hint:"verb",decoys:["to lose","to hide","to search"]},
+  {no:"å miste",en:"to lose",hint:"verb",decoys:["to find","to keep","to save"]},
+  {no:"å glemme",en:"to forget",hint:"verb",decoys:["to remember","to remind","to record"]},
+  {no:"å huske",en:"to remember",hint:"verb",decoys:["to forget","to imagine","to dream"]},
+  {no:"å forklare",en:"to explain",hint:"verb",decoys:["to describe","to translate","to repeat"]},
+  {no:"å oversette",en:"to translate",hint:"verb",decoys:["to read","to write","to speak"]},
+  {no:"å råde",en:"to advise",hint:"verb",decoys:["to warn","to order","to permit"]},
+  {no:"å tillate",en:"to allow / to permit",hint:"verb",decoys:["to forbid","to force","to suggest"]},
+  {no:"å forby",en:"to forbid / to prohibit",hint:"verb",decoys:["to allow","to suggest","to require"]},
+  {no:"å nekte",en:"to refuse / to deny",hint:"verb",decoys:["to accept","to agree","to offer"]},
+  {no:"å være enig",en:"to agree",hint:"verb",decoys:["to disagree","to refuse","to argue"]},
+  {no:"å krangle",en:"to argue / to quarrel",hint:"verb",decoys:["to agree","to discuss","to complain"]},
+  {no:"å klage",en:"to complain",hint:"verb",decoys:["to praise","to explain","to ask"]},
+  {no:"å rose",en:"to praise",hint:"verb",decoys:["to criticize","to ignore","to blame"]},
+  {no:"å kritisere",en:"to criticize",hint:"verb",decoys:["to praise","to accept","to defend"]},
+  {no:"å diskutere",en:"to discuss",hint:"verb",decoys:["to argue","to decide","to ignore"]},
+  {no:"å erkjenne",en:"to admit / to acknowledge",hint:"verb",decoys:["to deny","to hide","to forget"]},
+  {no:"å oppnå",en:"to achieve / to accomplish",hint:"verb",decoys:["to attempt","to fail","to ignore"]},
+  {no:"å unngå",en:"to avoid",hint:"verb",decoys:["to seek","to face","to accept"]},
+
+  // ── VERBS – EMOTIONS & MENTAL STATES ──
+  {no:"å glede seg",en:"to look forward to / to be glad",hint:"verb",decoys:["to grieve","to worry","to complain"]},
+  {no:"å være lei seg",en:"to feel sad",hint:"verb",decoys:["to rejoice","to worry","to get angry"]},
+  {no:"å bli sint",en:"to get angry",hint:"verb",decoys:["to calm down","to feel sad","to get scared"]},
+  {no:"å være redd",en:"to be afraid / to fear",hint:"verb",decoys:["to be brave","to ignore","to dare"]},
+  {no:"å skamme seg",en:"to feel ashamed",hint:"verb",decoys:["to feel confident","to feel proud","to feel relieved"]},
+  {no:"å være stolt",en:"to be proud",hint:"verb",decoys:["to be ashamed","to be jealous","to be modest"]},
+  {no:"å misunne",en:"to envy",hint:"verb",decoys:["to admire","to respect","to support"]},
+  {no:"å bli fornærmet",en:"to take offense / to feel offended",hint:"verb",decoys:["to forgive","to ignore","to understand"]},
+  {no:"å tilgi",en:"to forgive",hint:"verb",decoys:["to punish","to blame","to accuse"]},
+  {no:"å angre",en:"to regret",hint:"verb",decoys:["to celebrate","to forget","to accept"]},
+  {no:"å bekymre seg",en:"to worry",hint:"verb",decoys:["to relax","to calm down","to sleep well"]},
+  {no:"å roe seg ned",en:"to calm down",hint:"verb",decoys:["to get anxious","to panic","to worry"]},
+  {no:"å håpe",en:"to hope",hint:"verb",decoys:["to despair","to expect","to wish"]},
+  {no:"å stole på",en:"to trust",hint:"verb",decoys:["to distrust","to suspect","to fear"]},
+  {no:"å mistenke",en:"to suspect",hint:"verb",decoys:["to trust","to confirm","to know"]},
+  {no:"å beundre",en:"to admire",hint:"verb",decoys:["to criticize","to ignore","to tolerate"]},
+  {no:"å kjede seg",en:"to be bored",hint:"verb",decoys:["to enjoy","to laugh","to entertain"]},
+  {no:"å bli irritert",en:"to get irritated",hint:"verb",decoys:["to calm down","to relax","to enjoy"]},
+  {no:"å bli overrasket",en:"to be surprised",hint:"verb",decoys:["to be expected","to be bored","to be indifferent"]},
+  {no:"å bli skuffet",en:"to be disappointed",hint:"verb",decoys:["to be pleased","to be excited","to be relieved"]},
+  {no:"å drømme",en:"to dream",hint:"verb",decoys:["to sleep","to think","to plan"]},
+  {no:"å forelskte seg",en:"to fall in love",hint:"verb",decoys:["to fall out","to get married","to flirt"]},
+  {no:"å savne",en:"to miss someone",hint:"verb",decoys:["to forget","to avoid","to leave"]},
+  {no:"å trives",en:"to thrive / to feel at home",hint:"verb",decoys:["to struggle","to suffer","to complain"]},
+  {no:"å tørre",en:"to dare",hint:"verb",decoys:["to fear","to hesitate","to refuse"]},
+
+  // ── NOUNS – PEOPLE & SOCIETY ──
+  {no:"naboen",en:"the neighbor",hint:"noun",decoys:["the stranger","the relative","the landlord"]},
+  {no:"vitnet",en:"the witness",hint:"noun",decoys:["the victim","the suspect","the judge"]},
+  {no:"tjenestemann",en:"the official / the civil servant",hint:"noun",decoys:["the volunteer","the contractor","the manager"]},
+  {no:"journalisten",en:"the journalist",hint:"noun",decoys:["the editor","the broadcaster","the professor"]},
+  {no:"brannmannen",en:"the firefighter",hint:"noun",decoys:["the police officer","the soldier","the paramedic"]},
+  {no:"pensjonisten",en:"the retiree / the pensioner",hint:"noun",decoys:["the student","the teenager","the employee"]},
+  {no:"paret",en:"the couple",hint:"noun",decoys:["the friendship","the group","the team"]},
+  {no:"foreldreløst barn",en:"the orphan",hint:"noun",decoys:["the refugee","the widow","the volunteer"]},
+  {no:"utlendingen",en:"the foreigner",hint:"noun",decoys:["the citizen","the native","the resident"]},
+  {no:"mengden",en:"the crowd",hint:"noun",decoys:["the army","the audience","the committee"]},
+  {no:"fagforeningen",en:"the labor union",hint:"noun",decoys:["the company","the association","the government"]},
+  {no:"forsvareren",en:"the defender / the advocate",hint:"noun",decoys:["the attacker","the judge","the observer"]},
+  {no:"arvingen",en:"the heir",hint:"noun",decoys:["the owner","the donor","the creditor"]},
+  {no:"gjesten",en:"the guest",hint:"noun",decoys:["the tenant","the visitor","the neighbor"]},
+  {no:"sykepleieren",en:"the nurse",hint:"noun",decoys:["the doctor","the pharmacist","the surgeon"]},
+  {no:"undersøkelsen",en:"the survey / the poll",hint:"noun",decoys:["the report","the census","the interview"]},
+  {no:"talen",en:"the speech",hint:"noun",decoys:["the argument","the discussion","the lecture"]},
+  {no:"demonstrasjonen",en:"the demonstration / the protest",hint:"noun",decoys:["the celebration","the election","the ceremony"]},
+  {no:"avtalen",en:"the agreement",hint:"noun",decoys:["the argument","the decision","the contract"]},
+  {no:"minnet",en:"the memory",hint:"noun",decoys:["the dream","the regret","the reminder"]},
+  {no:"rådet",en:"the advice / the council",hint:"noun",decoys:["the order","the decision","the warning"]},
+  {no:"skikken",en:"the custom / the tradition",hint:"noun",decoys:["the costume","the culture","the habit"]},
+  {no:"kallenavnet",en:"the nickname",hint:"noun",decoys:["the surname","the title","the alias"]},
+  {no:"løgnen",en:"the lie",hint:"noun",decoys:["the truth","the secret","the rumor"]},
+  {no:"ryktet",en:"the rumor",hint:"noun",decoys:["the noise","the news","the gossip"]},
+  {no:"generasjonen",en:"the generation",hint:"noun",decoys:["the century","the decade","the era"]},
+  {no:"borgeren",en:"the citizen",hint:"noun",decoys:["the soldier","the resident","the foreigner"]},
+  {no:"flyktningen",en:"the refugee",hint:"noun",decoys:["the immigrant","the tourist","the traveler"]},
+
+  // ── NOUNS – HOME & EVERYDAY OBJECTS ──
+  {no:"skuffen",en:"the drawer",hint:"noun",decoys:["the cabinet","the shelf","the closet"]},
+  {no:"puten",en:"the pillow",hint:"noun",decoys:["the blanket","the mattress","the sheet"]},
+  {no:"kranen",en:"the faucet / the tap",hint:"noun",decoys:["the drain","the pipe","the valve"]},
+  {no:"kjøleskapet",en:"the refrigerator",hint:"noun",decoys:["the freezer","the oven","the microwave"]},
+  {no:"stikkontakten",en:"the electrical outlet",hint:"noun",decoys:["the switch","the plug","the cord"]},
+  {no:"trappen",en:"the staircase",hint:"noun",decoys:["the elevator","the ramp","the corridor"]},
+  {no:"kjelleren",en:"the basement",hint:"noun",decoys:["the attic","the garage","the hallway"]},
+  {no:"taket",en:"the ceiling / the roof",hint:"noun",decoys:["the floor","the wall","the foundation"]},
+  {no:"teppet",en:"the carpet / the rug",hint:"noun",decoys:["the curtain","the tile","the mat"]},
+  {no:"speilet",en:"the mirror",hint:"noun",decoys:["the window","the painting","the frame"]},
+  {no:"nøkkelen",en:"the key",hint:"noun",decoys:["the lock","the door","the handle"]},
+  {no:"dørklokken",en:"the doorbell",hint:"noun",decoys:["the lock","the knocker","the intercom"]},
+  {no:"søpla",en:"the trash / the garbage",hint:"noun",decoys:["the dirt","the waste","the recycling"]},
+  {no:"kleshengeren",en:"the clothes hanger",hint:"noun",decoys:["the shelf","the hook","the rack"]},
+  {no:"madrassen",en:"the mattress",hint:"noun",decoys:["the pillow","the blanket","the bed frame"]},
+  {no:"badekaret",en:"the bathtub",hint:"noun",decoys:["the shower","the sink","the toilet"]},
+  {no:"lysbryteren",en:"the light switch",hint:"noun",decoys:["the plug","the fuse","the circuit breaker"]},
+  {no:"blomsterpotten",en:"the flowerpot",hint:"noun",decoys:["the vase","the tray","the basket"]},
+  {no:"hjørnet",en:"the corner",hint:"noun",decoys:["the edge","the angle","the side"]},
+  {no:"låsen",en:"the lock",hint:"noun",decoys:["the key","the handle","the bolt"]},
+  {no:"bøtten",en:"the bucket",hint:"noun",decoys:["the barrel","the jar","the bin"]},
+  {no:"håndkleet",en:"the towel",hint:"noun",decoys:["the cloth","the napkin","the sheet"]},
+  {no:"gardinen",en:"the curtain",hint:"noun",decoys:["the blind","the shade","the screen"]},
+  {no:"kasserollen",en:"the saucepan / the pot",hint:"noun",decoys:["the pan","the wok","the bowl"]},
+  {no:"stekepannen",en:"the frying pan",hint:"noun",decoys:["the pot","the grill","the wok"]},
+
+  // ── NOUNS – NATURE & ENVIRONMENT ──
+  {no:"lynet",en:"the lightning",hint:"noun",decoys:["the thunder","the storm","the hail"]},
+  {no:"tørken",en:"the drought",hint:"noun",decoys:["the flood","the frost","the storm"]},
+  {no:"jordskjelvet",en:"the earthquake",hint:"noun",decoys:["the volcano","the tsunami","the landslide"]},
+  {no:"bredden",en:"the shore / the bank",hint:"noun",decoys:["the cliff","the beach","the valley"]},
+  {no:"mosen",en:"the moss",hint:"noun",decoys:["the lichen","the fern","the weed"]},
+  {no:"bladet",en:"the leaf",hint:"noun",decoys:["the branch","the root","the bark"]},
+  {no:"sølen",en:"the puddle / the mud",hint:"noun",decoys:["the pond","the lake","the stream"]},
+  {no:"busken",en:"the bush / the shrub",hint:"noun",decoys:["the tree","the flower","the cactus"]},
+  {no:"hulen",en:"the cave",hint:"noun",decoys:["the tunnel","the mine","the cliff"]},
+  {no:"enga",en:"the meadow",hint:"noun",decoys:["the forest","the hill","the valley"]},
+  {no:"tåken",en:"the fog",hint:"noun",decoys:["the cloud","the mist","the haze"]},
+  {no:"haglet",en:"the hail",hint:"noun",decoys:["the sleet","the frost","the snow"]},
+  {no:"stormen",en:"the storm",hint:"noun",decoys:["the drizzle","the breeze","the hurricane"]},
+  {no:"soloppgangen",en:"the sunrise",hint:"noun",decoys:["the sunset","the dusk","the noon"]},
+  {no:"solnedgangen",en:"the sunset",hint:"noun",decoys:["the sunrise","the dawn","the twilight"]},
+  {no:"fossen",en:"the waterfall",hint:"noun",decoys:["the river","the stream","the rapids"]},
+  {no:"myra",en:"the swamp / the marsh",hint:"noun",decoys:["the lake","the pond","the lagoon"]},
+  {no:"sletta",en:"the plain / the flatland",hint:"noun",decoys:["the mountain","the valley","the plateau"]},
+  {no:"klippen",en:"the cliff / the rock",hint:"noun",decoys:["the dune","the hill","the boulder"]},
+  {no:"tidevann",en:"the tide",hint:"noun",decoys:["the current","the wave","the surge"]},
+  {no:"vulkanen",en:"the volcano",hint:"noun",decoys:["the mountain","the geyser","the crater"]},
+  {no:"fjorden",en:"the fjord",hint:"noun",decoys:["the bay","the lake","the inlet"]},
+
+  // ── NOUNS – WORK & MONEY ──
+  {no:"lønnen",en:"the salary / the wage",hint:"noun",decoys:["the bonus","the tip","the pension"]},
+  {no:"fristen",en:"the deadline",hint:"noun",decoys:["the plan","the period","the limit"]},
+  {no:"regningen",en:"the bill / the invoice",hint:"noun",decoys:["the receipt","the contract","the estimate"]},
+  {no:"partneren",en:"the partner",hint:"noun",decoys:["the employee","the client","the shareholder"]},
+  {no:"møtet",en:"the meeting",hint:"noun",decoys:["the seminar","the lecture","the workshop"]},
+  {no:"rapporten",en:"the report",hint:"noun",decoys:["the form","the notice","the summary"]},
+  {no:"hovedkontoret",en:"the headquarters",hint:"noun",decoys:["the branch","the office","the factory"]},
+  {no:"forfremmelsen",en:"the promotion",hint:"noun",decoys:["the bonus","the transfer","the demotion"]},
+  {no:"oppsigelsen",en:"the dismissal / the layoff",hint:"noun",decoys:["the resignation","the retirement","the suspension"]},
+  {no:"gjelden",en:"the debt",hint:"noun",decoys:["the loan","the tax","the fine"]},
+  {no:"lånet",en:"the loan",hint:"noun",decoys:["the debt","the savings","the investment"]},
+  {no:"skatten",en:"the tax",hint:"noun",decoys:["the fine","the fee","the duty"]},
+  {no:"overskuddet",en:"the profit",hint:"noun",decoys:["the loss","the expense","the revenue"]},
+  {no:"tapet",en:"the loss",hint:"noun",decoys:["the profit","the gain","the expense"]},
+  {no:"kontrakten",en:"the contract",hint:"noun",decoys:["the policy","the permit","the clause"]},
+  {no:"streiken",en:"the strike",hint:"noun",decoys:["the protest","the boycott","the walkout"]},
+  {no:"stillingen",en:"the position / the job",hint:"noun",decoys:["the career","the task","the role"]},
+  {no:"filialen",en:"the branch (of a company)",hint:"noun",decoys:["the headquarters","the warehouse","the office"]},
+  {no:"arbeidsdagen",en:"the workday",hint:"noun",decoys:["the schedule","the break","the overtime"]},
+  {no:"lageret",en:"the warehouse / the storage",hint:"noun",decoys:["the store","the factory","the depot"]},
+  {no:"leverandøren",en:"the supplier",hint:"noun",decoys:["the buyer","the distributor","the retailer"]},
+  {no:"budsjettet",en:"the budget",hint:"noun",decoys:["the estimate","the forecast","the plan"]},
+
+  // ── ADJECTIVES ──
+  {no:"stolt",en:"proud",hint:"adjective",decoys:["ashamed","jealous","stubborn"]},
+  {no:"sjalu",en:"jealous",hint:"adjective",decoys:["proud","shy","angry"]},
+  {no:"sta",en:"stubborn",hint:"adjective",decoys:["flexible","patient","calm"]},
+  {no:"naiv",en:"naive",hint:"adjective",decoys:["cunning","wise","suspicious"]},
+  {no:"lur",en:"clever / cunning",hint:"adjective",decoys:["naive","honest","careless"]},
+  {no:"snill",en:"kind / nice",hint:"adjective",decoys:["mean","cold","distant"]},
+  {no:"gjerrig",en:"stingy / miserly",hint:"adjective",decoys:["generous","thrifty","wealthy"]},
+  {no:"sjenerøs",en:"generous",hint:"adjective",decoys:["stingy","selfish","greedy"]},
+  {no:"lat",en:"lazy",hint:"adjective",decoys:["hardworking","active","energetic"]},
+  {no:"flittig",en:"hardworking / diligent",hint:"adjective",decoys:["lazy","inactive","slow"]},
+  {no:"modig",en:"brave / courageous",hint:"adjective",decoys:["cowardly","reckless","timid"]},
+  {no:"feig",en:"cowardly",hint:"adjective",decoys:["brave","cautious","bold"]},
+  {no:"ærlig",en:"honest",hint:"adjective",decoys:["dishonest","deceptive","corrupt"]},
+  {no:"løgnaktig",en:"dishonest / lying",hint:"adjective",decoys:["honest","truthful","sincere"]},
+  {no:"nysgjerrig",en:"curious",hint:"adjective",decoys:["indifferent","bored","distracted"]},
+  {no:"fornuftig",en:"sensible / reasonable",hint:"adjective",decoys:["foolish","reckless","impulsive"]},
+  {no:"slurvete",en:"careless / sloppy",hint:"adjective",decoys:["careful","thorough","attentive"]},
+  {no:"nøyaktig",en:"precise / careful / neat",hint:"adjective",decoys:["messy","careless","inattentive"]},
+  {no:"utmattet",en:"exhausted",hint:"adjective",decoys:["energized","rested","refreshed"]},
+  {no:"redd",en:"scared / frightened",hint:"adjective",decoys:["brave","calm","excited"]},
+  {no:"lettet",en:"relieved",hint:"adjective",decoys:["worried","tense","stressed"]},
+  {no:"skuffet",en:"disappointed",hint:"adjective",decoys:["satisfied","pleased","excited"]},
+  {no:"fornøyd",en:"satisfied / content",hint:"adjective",decoys:["disappointed","bored","dissatisfied"]},
+  {no:"utålmodig",en:"impatient",hint:"adjective",decoys:["patient","calm","relaxed"]},
+  {no:"tilgjengelig",en:"available / accessible",hint:"adjective",decoys:["busy","unavailable","occupied"]},
+  {no:"passende",en:"suitable / appropriate",hint:"adjective",decoys:["inadequate","excessive","unsuitable"]},
+  {no:"uventet",en:"unexpected",hint:"adjective",decoys:["expected","planned","predictable"]},
+  {no:"dyktig",en:"capable / skilled",hint:"adjective",decoys:["incapable","clumsy","helpless"]},
+  {no:"kraftig",en:"powerful / strong",hint:"adjective",decoys:["weak","fragile","helpless"]},
+  {no:"hverdagslig",en:"everyday / ordinary",hint:"adjective",decoys:["occasional","rare","special"]},
+  {no:"høflig",en:"polite",hint:"adjective",decoys:["rude","arrogant","aggressive"]},
+  {no:"uhøflig",en:"rude / impolite",hint:"adjective",decoys:["polite","gentle","kind"]},
+  {no:"beskjeden",en:"modest / humble",hint:"adjective",decoys:["arrogant","proud","showy"]},
+
+  // ── ADVERBS, CONNECTORS & PHRASES ──
+  {no:"til tross for",en:"despite / in spite of",hint:"phrase",decoys:["because of","thanks to","due to"]},
+  {no:"dessuten",en:"furthermore / in addition",hint:"adverb",decoys:["however","instead","otherwise"]},
+  {no:"på den annen side",en:"on the other hand",hint:"phrase",decoys:["in conclusion","in summary","for example"]},
+  {no:"når det gjelder",en:"as for / regarding",hint:"phrase",decoys:["in order to","instead of","according to"]},
+  {no:"derfor",en:"therefore / that is why",hint:"adverb",decoys:["however","meanwhile","nevertheless"]},
+  {no:"ofte",en:"often",hint:"adverb",decoys:["rarely","always","never"]},
+  {no:"av og til",en:"from time to time",hint:"phrase",decoys:["all the time","never again","right away"]},
+  {no:"med en gang",en:"right away / immediately",hint:"phrase",decoys:["later on","eventually","gradually"]},
+  {no:"noen ganger",en:"sometimes",hint:"adverb",decoys:["always","never","often"]},
+  {no:"plutselig",en:"suddenly",hint:"adverb",decoys:["slowly","gradually","eventually"]},
+  {no:"egentlig",en:"actually / really",hint:"adverb",decoys:["in theory","in general","in practice"]},
+  {no:"til slutt",en:"in the end / finally",hint:"phrase",decoys:["right away","at first","in the beginning"]},
+  {no:"forutsatt at",en:"provided that",hint:"phrase",decoys:["in case","even though","as soon as"]},
+  {no:"siden",en:"since / because",hint:"conjunction",decoys:["unless","although","even if"]},
+  {no:"på denne måten",en:"in this way / thus",hint:"phrase",decoys:["on the contrary","instead","otherwise"]},
+  {no:"selv om",en:"although / even though",hint:"conjunction",decoys:["because","since","unless"]},
+  {no:"knapt",en:"barely / hardly",hint:"adverb",decoys:["already","still","yet"]},
+  {no:"fremdeles",en:"still / yet",hint:"adverb",decoys:["already","no longer","soon"]},
+  {no:"så snart som",en:"as soon as",hint:"phrase",decoys:["as long as","in case","unless"]},
+  {no:"i mellomtiden",en:"meanwhile",hint:"phrase",decoys:["therefore","afterwards","instead"]},
+  {no:"likevel",en:"nevertheless / still",hint:"adverb",decoys:["therefore","additionally","similarly"]},
+  {no:"imidlertid",en:"however / nevertheless",hint:"adverb",decoys:["therefore","additionally","finally"]},
+
+  // ── IDIOMS & SET PHRASES ──
+  {no:"å være lei av",en:"to be fed up with",hint:"phrase",decoys:["to be satisfied with","to be fond of","to be proud of"]},
+  {no:"å ha lyst til",en:"to feel like / to want to",hint:"phrase",decoys:["to be afraid of","to be tired of","to be capable of"]},
+  {no:"å gjennomføre",en:"to carry out / to accomplish",hint:"phrase",decoys:["to give up","to put aside","to abandon"]},
+  {no:"å legge merke til",en:"to notice / to pay attention to",hint:"phrase",decoys:["to make a note","to ignore","to pretend"]},
+  {no:"å ta hensyn til",en:"to take into account",hint:"phrase",decoys:["to count on","to forget about","to disagree with"]},
+  {no:"å gjøre inntrykk",en:"to make an impression",hint:"phrase",decoys:["to fail to impress","to remain unseen","to be ignored"]},
+  {no:"å holde seg oppdatert",en:"to stay up to date",hint:"phrase",decoys:["to fall behind","to be confused","to be uninformed"]},
+  {no:"med ett",en:"all of a sudden",hint:"phrase",decoys:["gradually","repeatedly","eventually"]},
+  {no:"kanskje",en:"maybe / perhaps",hint:"adverb",decoys:["definitely","certainly","absolutely"]},
+  {no:"å ha i tankene",en:"to have in mind",hint:"phrase",decoys:["to forget","to lose track","to change one's mind"]},
+  {no:"å ikke spille noen rolle",en:"to not matter",hint:"phrase",decoys:["to matter a lot","to be important","to be crucial"]},
+  {no:"med vilje",en:"on purpose / deliberately",hint:"phrase",decoys:["by accident","in a hurry","without thinking"]},
+  {no:"slett ikke",en:"not at all",hint:"phrase",decoys:["completely","partly","to some extent"]},
+  {no:"det er en avtale",en:"it's a deal / agreed",hint:"phrase",decoys:["in doubt","in disagreement","in question"]},
+  {no:"i tide",en:"in time / on time",hint:"phrase",decoys:["late","too early","ahead of schedule"]},
+  {no:"ut av plass",en:"out of place",hint:"phrase",decoys:["fitting in","perfectly suited","at the right time"]},
+  {no:"innerst inne",en:"deep down / at heart",hint:"phrase",decoys:["on the surface","in the end","at first"]},
+  {no:"å ha rett",en:"to be right",hint:"phrase",decoys:["to be wrong","to have a reason","to make sense"]},
+  {no:"å miste hodet",en:"to lose one's head / to panic",hint:"phrase",decoys:["to stay calm","to think clearly","to take charge"]},
+  {no:"å ta ansvar",en:"to take responsibility",hint:"phrase",decoys:["to avoid blame","to share credit","to give orders"]},
+  {no:"siden da",en:"since then / ever since",hint:"phrase",decoys:["before that","until now","right away"]},
+  {no:"i motsetning til",en:"unlike / in contrast to",hint:"phrase",decoys:["similar to","the same as","along with"]},
+  {no:"i det minste",en:"at least",hint:"phrase",decoys:["at most","no more than","as much as"]},
+  {no:"å drive med",en:"to be involved in / to do",hint:"phrase",decoys:["to avoid","to quit","to finish"]},
+
+  // ── NOUNS – ABSTRACT & GENERAL ──
+  {no:"vanen",en:"the habit",hint:"noun",decoys:["the custom","the tradition","the rule"]},
+  {no:"ferdigheten",en:"the skill",hint:"noun",decoys:["the talent","the knowledge","the ability"]},
+  {no:"erfaringen",en:"the experience",hint:"noun",decoys:["the experiment","the example","the expertise"]},
+  {no:"kunnskapen",en:"the knowledge",hint:"noun",decoys:["the skill","the wisdom","the information"]},
+  {no:"meningen",en:"the opinion / the meaning",hint:"noun",decoys:["the fact","the belief","the theory"]},
+  {no:"muligheten",en:"the opportunity / the possibility",hint:"noun",decoys:["the ability","the permission","the advantage"]},
+  {no:"beslutningen",en:"the decision",hint:"noun",decoys:["the problem","the question","the plan"]},
+  {no:"årsaken",en:"the reason / the cause",hint:"noun",decoys:["the result","the effect","the purpose"]},
+  {no:"konsekvensen",en:"the consequence",hint:"noun",decoys:["the reason","the cause","the problem"]},
+  {no:"fordelen",en:"the advantage",hint:"noun",decoys:["the disadvantage","the obstacle","the risk"]},
+  {no:"ulempen",en:"the disadvantage / the drawback",hint:"noun",decoys:["the advantage","the benefit","the strength"]},
+  {no:"målet",en:"the goal / the aim",hint:"noun",decoys:["the plan","the dream","the wish"]},
+  {no:"oppgaven",en:"the task / the assignment",hint:"noun",decoys:["the goal","the result","the challenge"]},
+  {no:"innsatsen",en:"the effort",hint:"noun",decoys:["the result","the progress","the attempt"]},
+  {no:"suksessen",en:"the success",hint:"noun",decoys:["the failure","the luck","the progress"]},
+  {no:"feilen",en:"the mistake / the error",hint:"noun",decoys:["the accident","the problem","the failure"]},
+  {no:"endringen",en:"the change",hint:"noun",decoys:["the improvement","the reform","the shift"]},
+  {no:"utviklingen",en:"the development",hint:"noun",decoys:["the growth","the progress","the change"]},
+  {no:"innflytelsen",en:"the influence / the impact",hint:"noun",decoys:["the effect","the power","the control"]},
+  {no:"forbindelsen",en:"the connection / the link",hint:"noun",decoys:["the relationship","the network","the contact"]},
+  {no:"forholdet",en:"the relationship",hint:"noun",decoys:["the connection","the behavior","the feeling"]},
+  {no:"spørsmålet",en:"the question / the issue",hint:"noun",decoys:["the answer","the problem","the topic"]},
+  {no:"svaret",en:"the answer / the response",hint:"noun",decoys:["the question","the solution","the reply"]},
+  {no:"retten",en:"the right / the court",hint:"noun",decoys:["the duty","the permission","the privilege"]},
+  {no:"plikten",en:"the duty / the obligation",hint:"noun",decoys:["the right","the privilege","the freedom"]},
+  {no:"regelen",en:"the rule",hint:"noun",decoys:["the law","the norm","the regulation"]},
+  {no:"loven",en:"the law",hint:"noun",decoys:["the rule","the regulation","the order"]},
+  {no:"utfordringen",en:"the challenge",hint:"noun",decoys:["the problem","the obstacle","the difficulty"]},
+];
+
+let audioCtx=null;
+function unlockAudio(){
+  if(audioCtx)return;
+  audioCtx=new(window.AudioContext||window.webkitAudioContext)();
+  const buf=audioCtx.createBuffer(1,1,22050);
+  const src=audioCtx.createBufferSource();
+  src.buffer=buf;src.connect(audioCtx.destination);src.start(0);
+}
+function playTone(type){
+  if(!audioCtx)return;
+  if(audioCtx.state==='suspended')audioCtx.resume();
+  const ctx=audioCtx,now=ctx.currentTime;
+  if(type==='correct'){
+    [523.25,659.25,783.99].forEach((freq,i)=>{
+      const o=ctx.createOscillator(),g=ctx.createGain();
+      o.connect(g);g.connect(ctx.destination);
+      o.type='sine';
+      o.frequency.setValueAtTime(freq,now+i*0.12);
+      g.gain.setValueAtTime(0.28,now+i*0.12);
+      g.gain.exponentialRampToValueAtTime(0.001,now+i*0.12+0.35);
+      o.start(now+i*0.12);o.stop(now+i*0.12+0.4);
+    });
+  }else{
+    const o=ctx.createOscillator(),g=ctx.createGain();
+    o.connect(g);g.connect(ctx.destination);
+    o.type='sawtooth';
+    o.frequency.setValueAtTime(300,now);
+    o.frequency.exponentialRampToValueAtTime(160,now+0.4);
+    g.gain.setValueAtTime(0.18,now);
+    g.gain.exponentialRampToValueAtTime(0.001,now+0.5);
+    o.start(now);o.stop(now+0.55);
+  }
+}
+let voices=[];
+function loadVoices(){voices=window.speechSynthesis?speechSynthesis.getVoices():[];}
+function speakNorwegian(text){
+  if(!window.speechSynthesis)return;
+  speechSynthesis.cancel();
+  const u=new SpeechSynthesisUtterance(text);
+  u.lang='nb-NO';u.rate=0.88;u.pitch=1.0;
+  if(!voices.length)loadVoices();
+  const v=voices.find(v=>v.lang==='nb-NO'||v.lang==='no-NO'||v.lang==='nn-NO')
+         ||voices.find(v=>v.lang.startsWith('nb')||v.lang.startsWith('no'));
+  if(v)u.voice=v;
+  speechSynthesis.speak(u);
+}
+let questions=[],current=0,score=0,answered=false;
+function shuffle(a){
+  a=[...a];
+  for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];}
+  return a;
+}
+document.getElementById('start-btn').addEventListener('click',()=>{
+  unlockAudio();loadVoices();
+  document.getElementById('splash-screen').style.display='none';
+  document.getElementById('quiz-screen').style.display='block';
+  initQuiz();
+});
+function initQuiz(){
+  questions=shuffle(wordBank).slice(0,20);
+  current=0;score=0;answered=false;
+  buildDots();loadQuestion();
+}
+function restartQuiz(){
+  document.getElementById('results-screen').style.display='none';
+  document.getElementById('quiz-screen').style.display='block';
+  initQuiz();
+}
+function buildDots(){
+  const row=document.getElementById('dots-row');row.innerHTML='';
+  for(let i=0;i<20;i++){const d=document.createElement('div');d.className='dot';d.id='dot-'+i;row.appendChild(d);}
+}
+function loadQuestion(){
+  answered=false;
+  const q=questions[current];
+  document.getElementById('progress-bar').style.width=(current/20*100)+'%';
+  document.getElementById('progress-label').textContent=current+' / 20';
+  document.getElementById('score-display').textContent=score;
+  document.getElementById('word-number').textContent='Word '+(current+1);
+  document.getElementById('norsk-word').textContent=q.no;
+  document.getElementById('word-hint').textContent=q.hint;
+  document.getElementById('word-card').className='word-card';
+  const fb=document.getElementById('feedback');fb.textContent='';fb.className='feedback';
+  const choices=shuffle([q.en,...q.decoys.slice(0,3)]);
+  const el=document.getElementById('choices');el.innerHTML='';
+  choices.forEach(c=>{
+    const b=document.createElement('button');
+    b.className='choice-btn';b.textContent=c;
+    b.addEventListener('click',()=>handleAnswer(c,q.en,b));
+    el.appendChild(b);
+  });
+  document.getElementById('next-btn').className='next-btn';
+  setTimeout(()=>speakNorwegian(q.no),350);
+}
+function handleAnswer(chosen,correct,btn){
+  if(answered)return;answered=true;
+  const ok=chosen===correct;
+  const card=document.getElementById('word-card');
+  const fb=document.getElementById('feedback');
+  const nb=document.getElementById('next-btn');
+  document.querySelectorAll('.choice-btn').forEach(b=>{
+    b.disabled=true;
+    if(b.textContent===correct)b.classList.add('correct');
+  });
+  if(ok){
+    score++;btn.classList.add('correct');
+    card.classList.add('correct','pulse-correct');
+    fb.textContent='✓ Correct! Bra jobbet!';fb.className='feedback show-correct';
+  }else{
+    btn.classList.add('wrong');card.classList.add('wrong','shake');
+    fb.textContent='✗ Incorrect. The answer is: "'+correct+'"';fb.className='feedback show-wrong';
+    setTimeout(()=>card.classList.remove('shake'),400);
+  }
+  playTone(ok?'correct':'wrong');
+  const dot=document.getElementById('dot-'+current);
+  if(dot)dot.className='dot '+(ok?'correct':'wrong');
+  document.getElementById('score-display').textContent=score;
+  nb.className='next-btn visible';
+  nb.textContent=current===19?'See Results →':'Next word →';
+}
+document.getElementById('next-btn').addEventListener('click',()=>{
+  current++;current>=20?showResults():loadQuestion();
+});
+document.getElementById('speak-btn').addEventListener('click',()=>{
+  const w=document.getElementById('norsk-word').textContent;
+  if(w&&w!=='—')speakNorwegian(w);
+});
+function showResults(){
+  document.getElementById('quiz-screen').style.display='none';
+  document.getElementById('results-screen').style.display='block';
+  const champ=score>=17;
+  document.getElementById('results-emoji').textContent=champ?'🏆':score>=12?'💪':'📚';
+  const t=document.getElementById('results-title');
+  t.textContent=champ?'Mester!':score>=12?'Bra jobbet!':'Fortsett å øve!';
+  t.className='results-title'+(champ?' results-champ':'');
+  const msg=champ?"Outstanding! You're a true Norwegian champion 🌟":score>=12?"Solid work — keep building on this!":"Keep studying — you'll get there!";
+  document.getElementById('results-score').innerHTML='You got <strong>'+score+' / 20</strong> correct.<br><small style="color:var(--muted)">'+msg+'</small>';
+}
+if(window.speechSynthesis){speechSynthesis.onvoiceschanged=loadVoices;loadVoices();}
+</script>
+</body>
+</html>

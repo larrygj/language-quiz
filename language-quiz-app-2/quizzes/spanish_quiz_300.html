@@ -1,0 +1,551 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>¡Español! — Spanish Quiz</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg:#0d0d0d;--card:#161616;--border:#2a2a2a;
+    --accent:#e8b84b;--correct:#4be87e;--wrong:#e84b4b;
+    --text:#f0ece0;--muted:#888;--radius:14px;
+  }
+  *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
+  body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;min-height:100vh;min-height:-webkit-fill-available;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:20px;overflow-x:hidden;}
+  body::before{content:'';position:fixed;inset:0;background:radial-gradient(ellipse 60% 50% at 20% 20%,rgba(232,184,75,0.07) 0%,transparent 60%),radial-gradient(ellipse 50% 40% at 80% 80%,rgba(232,75,75,0.05) 0%,transparent 60%);pointer-events:none;z-index:0;}
+  .container{position:relative;z-index:1;width:100%;max-width:560px;}
+  #splash-screen{text-align:center;padding:20px;}
+  .splash-logo{font-family:'Playfair Display',serif;font-size:clamp(3rem,10vw,4.5rem);font-weight:900;letter-spacing:-2px;line-height:1;margin-bottom:8px;}
+  .splash-logo span{color:var(--accent);}
+  .splash-subtitle{color:var(--muted);font-size:0.8rem;letter-spacing:0.18em;text-transform:uppercase;margin-bottom:36px;}
+  .splash-features{list-style:none;text-align:left;display:inline-flex;flex-direction:column;gap:14px;margin-bottom:40px;background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:22px 26px;width:100%;max-width:380px;}
+  .splash-features li{display:flex;align-items:center;gap:12px;font-size:0.93rem;}
+  .splash-features li .icon{font-size:1.3rem;width:28px;flex-shrink:0;text-align:center;}
+  .start-btn{background:var(--accent);color:#000;border:none;border-radius:var(--radius);font-family:'DM Sans',sans-serif;font-size:1.1rem;font-weight:500;padding:18px 60px;cursor:pointer;letter-spacing:0.04em;display:inline-block;}
+  .start-btn:active{transform:scale(0.96);background:#f0c464;}
+  .splash-note{color:var(--muted);font-size:0.75rem;margin-top:14px;}
+  header{text-align:center;margin-bottom:26px;}
+  .logo{font-family:'Playfair Display',serif;font-size:clamp(2rem,6vw,2.8rem);font-weight:900;letter-spacing:-1px;}
+  .logo span{color:var(--accent);}
+  .subtitle{color:var(--muted);font-size:0.75rem;letter-spacing:0.18em;text-transform:uppercase;margin-top:4px;}
+  .progress-row{display:flex;align-items:center;gap:10px;margin-bottom:16px;}
+  .progress-bar-wrap{flex:1;height:4px;background:var(--border);border-radius:99px;overflow:hidden;}
+  .progress-bar-fill{height:100%;background:linear-gradient(90deg,var(--accent),#f0c878);border-radius:99px;transition:width 0.5s cubic-bezier(.4,0,.2,1);}
+  .progress-label{font-size:0.72rem;color:var(--muted);white-space:nowrap;}
+  .score-badge{background:var(--card);border:1px solid var(--border);border-radius:99px;padding:4px 12px;font-size:0.78rem;font-weight:500;color:var(--accent);white-space:nowrap;}
+  .word-card{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:34px 24px 26px;margin-bottom:14px;text-align:center;position:relative;transition:border-color 0.3s;}
+  .word-card.correct{border-color:var(--correct);}
+  .word-card.wrong{border-color:var(--wrong);}
+  .word-number{position:absolute;top:12px;left:16px;font-size:0.68rem;color:var(--muted);letter-spacing:0.1em;text-transform:uppercase;}
+  .speak-btn{position:absolute;top:10px;right:14px;background:none;border:1px solid var(--border);border-radius:99px;color:var(--accent);font-size:1rem;cursor:pointer;padding:4px 10px;line-height:1.5;}
+  .speak-btn:active{background:rgba(232,184,75,0.15);border-color:var(--accent);}
+  .spanish-word{font-family:'Playfair Display',serif;font-size:clamp(1.8rem,7vw,3rem);font-weight:700;letter-spacing:-1px;margin:10px 0 6px;line-height:1.1;}
+  .word-hint{font-size:0.75rem;color:var(--muted);letter-spacing:0.1em;text-transform:uppercase;}
+  .choices{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin-bottom:12px;}
+  .choice-btn{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);color:var(--text);font-family:'DM Sans',sans-serif;font-size:0.9rem;font-weight:400;padding:16px 10px;cursor:pointer;text-align:center;line-height:1.3;}
+  .choice-btn:active:not(:disabled){background:rgba(232,184,75,0.08);border-color:var(--accent);transform:scale(0.97);}
+  .choice-btn.correct{background:rgba(75,232,126,0.12);border-color:var(--correct);color:var(--correct);font-weight:500;}
+  .choice-btn.wrong{background:rgba(232,75,75,0.12);border-color:var(--wrong);color:var(--wrong);font-weight:500;}
+  .choice-btn:disabled{cursor:default;}
+  .feedback{min-height:34px;text-align:center;font-size:0.88rem;color:var(--muted);margin-bottom:10px;}
+  .feedback.show-correct{color:var(--correct);font-weight:500;}
+  .feedback.show-wrong{color:var(--wrong);font-weight:500;}
+  .next-btn{width:100%;background:var(--accent);color:#000;border:none;border-radius:var(--radius);font-family:'DM Sans',sans-serif;font-size:0.95rem;font-weight:500;padding:16px;cursor:pointer;display:none;}
+  .next-btn:active{background:#f0c464;transform:scale(0.98);}
+  .next-btn.visible{display:block;}
+  .dots-row{display:flex;gap:5px;flex-wrap:wrap;justify-content:center;margin-top:12px;}
+  .dot{width:10px;height:10px;border-radius:50%;background:var(--border);transition:background 0.3s;}
+  .dot.correct{background:var(--correct);}
+  .dot.wrong{background:var(--wrong);}
+  #results-screen{display:none;text-align:center;padding:30px 20px;}
+  .results-emoji{font-size:5rem;margin-bottom:14px;animation:pop 0.5s cubic-bezier(.4,0,.2,1);}
+  @keyframes pop{0%{transform:scale(0.3);opacity:0;}70%{transform:scale(1.15);}100%{transform:scale(1);opacity:1;}}
+  .results-title{font-family:'Playfair Display',serif;font-size:2.2rem;font-weight:900;margin-bottom:8px;}
+  .results-champ{color:var(--accent);}
+  .results-score{font-size:1.05rem;color:var(--muted);margin-bottom:28px;line-height:1.8;}
+  .results-score strong{color:var(--text);font-size:1.4rem;}
+  .restart-btn{background:var(--accent);color:#000;border:none;border-radius:var(--radius);font-family:'DM Sans',sans-serif;font-size:1rem;font-weight:500;padding:16px 40px;cursor:pointer;}
+  .restart-btn:active{background:#f0c464;}
+  @keyframes shake{0%,100%{transform:translateX(0)}20%{transform:translateX(-6px)}40%{transform:translateX(6px)}60%{transform:translateX(-4px)}80%{transform:translateX(4px)}}
+  .shake{animation:shake 0.35s ease;}
+  @keyframes pulse-correct{0%{box-shadow:0 0 0 0 rgba(75,232,126,0.4)}70%{box-shadow:0 0 0 12px rgba(75,232,126,0)}100%{box-shadow:0 0 0 0 rgba(75,232,126,0)}}
+  .pulse-correct{animation:pulse-correct 0.5s ease;}
+</style>
+</head>
+<body>
+<div class="container">
+  <div id="splash-screen">
+    <div class="splash-logo">¡<span>Español</span>!</div>
+    <div class="splash-subtitle">Intermediate Vocabulary Quiz</div>
+    <ul class="splash-features">
+      <li><span class="icon">🇲🇽</span> 300 intermediate Spanish words</li>
+      <li><span class="icon">🔊</span> Spoken aloud in Latin American Spanish</li>
+      <li><span class="icon">🎵</span> Sound feedback on every answer</li>
+      <li><span class="icon">🏆</span> Score 17+ out of 20 and earn ¡Campeón!</li>
+    </ul>
+    <button class="start-btn" id="start-btn">¡Empezar! &nbsp;→</button>
+    <div class="splash-note">Tap to unlock audio &amp; begin</div>
+  </div>
+  <div id="quiz-screen" style="display:none">
+    <header>
+      <div class="logo">¡<span>Español</span>!</div>
+      <div class="subtitle">Intermediate Vocabulary Quiz</div>
+    </header>
+    <div class="progress-row">
+      <div class="progress-bar-wrap"><div class="progress-bar-fill" id="progress-bar" style="width:0%"></div></div>
+      <div class="progress-label" id="progress-label">0 / 20</div>
+      <div class="score-badge">⭐ <span id="score-display">0</span></div>
+    </div>
+    <div class="word-card" id="word-card">
+      <div class="word-number" id="word-number">Word 1</div>
+      <button class="speak-btn" id="speak-btn">🔊</button>
+      <div class="spanish-word" id="spanish-word">—</div>
+      <div class="word-hint" id="word-hint">Spanish → English</div>
+    </div>
+    <div class="choices" id="choices"></div>
+    <div class="feedback" id="feedback"></div>
+    <button class="next-btn" id="next-btn">Next word →</button>
+    <div class="dots-row" id="dots-row"></div>
+  </div>
+  <div id="results-screen">
+    <div class="results-emoji" id="results-emoji">🎉</div>
+    <div class="results-title" id="results-title">¡Campeón!</div>
+    <div class="results-score" id="results-score"></div>
+    <button class="restart-btn" onclick="restartQuiz()">Play Again</button>
+  </div>
+</div>
+<script>
+const wordBank = [
+  // ── ORIGINAL 30 ──
+  {es:"madrugada",en:"early morning / dawn",hint:"noun",decoys:["midnight","afternoon","dusk"]},
+  {es:"lograr",en:"to achieve",hint:"verb",decoys:["to forget","to lose","to hide"]},
+  {es:"imprescindible",en:"indispensable",hint:"adjective",decoys:["forbidden","invisible","ordinary"]},
+  {es:"el desafío",en:"the challenge",hint:"noun",decoys:["the schedule","the mistake","the reward"]},
+  {es:"advertir",en:"to warn",hint:"verb",decoys:["to advertise","to wonder","to ignore"]},
+  {es:"la cosecha",en:"the harvest",hint:"noun",decoys:["the kitchen","the coast","the soil"]},
+  {es:"acostumbrarse",en:"to get used to",hint:"verb",decoys:["to get dressed","to fall asleep","to complain"]},
+  {es:"el comportamiento",en:"the behavior",hint:"noun",decoys:["the transportation","the competition","the improvement"]},
+  {es:"añadir",en:"to add",hint:"verb",decoys:["to annoy","to subtract","to divide"]},
+  {es:"el ciudadano",en:"the citizen",hint:"noun",decoys:["the soldier","the neighbor","the businessman"]},
+  {es:"rechazar",en:"to reject",hint:"verb",decoys:["to search","to recycle","to receive"]},
+  {es:"la temporada",en:"the season / the period",hint:"noun",decoys:["the temperature","the ceremony","the weekend"]},
+  {es:"superar",en:"to overcome",hint:"verb",decoys:["to suppose","to supervise","to separate"]},
+  {es:"la mariposa",en:"the butterfly",hint:"noun",decoys:["the dragonfly","the seagull","the ladybug"]},
+  {es:"asombroso",en:"amazing / astonishing",hint:"adjective",decoys:["horrible","ancient","suspicious"]},
+  {es:"el presupuesto",en:"the budget",hint:"noun",decoys:["the assumption","the requirement","the candidate"]},
+  {es:"enterarse",en:"to find out",hint:"verb",decoys:["to bury","to intervene","to memorize"]},
+  {es:"la ola",en:"the wave",hint:"noun",decoys:["the hole","the cloud","the tide"]},
+  {es:"sin embargo",en:"however / nevertheless",hint:"phrase",decoys:["therefore","in addition","for example"]},
+  {es:"el lazo",en:"the bond / the tie",hint:"noun",decoys:["the path","the mirror","the weight"]},
+  {es:"aprovechar",en:"to take advantage of",hint:"verb",decoys:["to improve","to approve","to approach"]},
+  {es:"la queja",en:"the complaint",hint:"noun",decoys:["the quest","the quote","the queue"]},
+  {es:"callado",en:"quiet / silent",hint:"adjective",decoys:["called","bald","careless"]},
+  {es:"el semáforo",en:"the traffic light",hint:"noun",decoys:["the summary","the semester","the seaport"]},
+  {es:"faltar",en:"to be missing / to lack",hint:"verb",decoys:["to fail","to fault","to fold"]},
+  {es:"la vergüenza",en:"the shame / embarrassment",hint:"noun",decoys:["the courage","the vengeance","the grievance"]},
+  {es:"tirar",en:"to throw / to pull",hint:"verb",decoys:["to tie","to tire","to toast"]},
+  {es:"el chiste",en:"the joke",hint:"noun",decoys:["the whistle","the chest","the chart"]},
+  {es:"la mudanza",en:"the move / relocation",hint:"noun",decoys:["the silence","the mutation","the renovation"]},
+  {es:"encargarse",en:"to take charge / to be in charge",hint:"verb",decoys:["to enchant","to encourage","to increase"]},
+
+  // ── VERBS – DAILY LIFE ──
+  {es:"madrugar",en:"to get up early",hint:"verb",decoys:["to stay up late","to sleep in","to take a nap"]},
+  {es:"tardar",en:"to take long / to be late",hint:"verb",decoys:["to hurry","to arrive","to delay someone"]},
+  {es:"quedarse",en:"to stay / to remain",hint:"verb",decoys:["to leave","to escape","to return"]},
+  {es:"fijarse",en:"to notice / to pay attention",hint:"verb",decoys:["to fix","to settle","to pretend"]},
+  {es:"portarse",en:"to behave",hint:"verb",decoys:["to carry","to transport","to pretend"]},
+  {es:"atreverse",en:"to dare",hint:"verb",decoys:["to attract","to address","to attempt"]},
+  {es:"conseguir",en:"to get / to obtain",hint:"verb",decoys:["to continue","to consider","to construct"]},
+  {es:"dejar",en:"to leave / to let / to stop doing",hint:"verb",decoys:["to take","to carry","to bring"]},
+  {es:"tardar en",en:"to take time to",hint:"verb",decoys:["to rush to","to forget to","to refuse to"]},
+  {es:"repartir",en:"to distribute / to hand out",hint:"verb",decoys:["to repeat","to repair","to replace"]},
+  {es:"apagar",en:"to turn off / to extinguish",hint:"verb",decoys:["to turn on","to attach","to appear"]},
+  {es:"encender",en:"to turn on / to light",hint:"verb",decoys:["to enclose","to hide","to close"]},
+  {es:"recoger",en:"to pick up / to collect",hint:"verb",decoys:["to recognize","to recover","to recommend"]},
+  {es:"guardar",en:"to keep / to save / to put away",hint:"verb",decoys:["to guard","to earn","to look at"]},
+  {es:"mezclar",en:"to mix / to blend",hint:"verb",decoys:["to measure","to move","to melt"]},
+  {es:"doblar",en:"to fold / to turn / to dub",hint:"verb",decoys:["to double","to doubt","to donate"]},
+  {es:"alquilar",en:"to rent",hint:"verb",decoys:["to buy","to lend","to borrow"]},
+  {es:"mudarse",en:"to move house",hint:"verb",decoys:["to change clothes","to get dirty","to improve"]},
+  {es:"arreglar",en:"to fix / to arrange",hint:"verb",decoys:["to break","to attach","to argue"]},
+  {es:"durar",en:"to last",hint:"verb",decoys:["to hurt","to harden","to doubt"]},
+  {es:"resultar",en:"to turn out / to result",hint:"verb",decoys:["to return","to resist","to resolve"]},
+  {es:"molestar",en:"to bother / to annoy",hint:"verb",decoys:["to model","to motivate","to modify"]},
+  {es:"equivocarse",en:"to make a mistake",hint:"verb",decoys:["to choose","to compare","to escape"]},
+  {es:"darse cuenta",en:"to realize",hint:"verb",decoys:["to give up","to count","to take note"]},
+  {es:"echar de menos",en:"to miss someone / something",hint:"verb",decoys:["to throw away","to run out of","to give less"]},
+  {es:"ponerse",en:"to put on / to become",hint:"verb",decoys:["to take off","to place","to pose"]},
+  {es:"hacerse",en:"to become",hint:"verb",decoys:["to make","to do","to pretend"]},
+  {es:"volverse",en:"to become / to turn into",hint:"verb",decoys:["to return","to revolve","to volunteer"]},
+  {es:"aguantar",en:"to put up with / to endure",hint:"verb",decoys:["to wait","to save","to avoid"]},
+  {es:"atender",en:"to attend to / to serve",hint:"verb",decoys:["to attend school","to attempt","to pretend"]},
+  {es:"caber",en:"to fit",hint:"verb",decoys:["to fall","to know","to end"]},
+  {es:"sobrar",en:"to be left over / to have too much",hint:"verb",decoys:["to survive","to suffer","to surpass"]},
+  {es:"tardar",en:"to take a long time",hint:"verb",decoys:["to arrive on time","to hurry up","to be early"]},
+  {es:"lustrar",en:"to shine / to polish",hint:"verb",decoys:["to illuminate","to clean","to dust"]},
+  {es:"regar",en:"to water (plants)",hint:"verb",decoys:["to plant","to prune","to harvest"]},
+
+  // ── VERBS – EMOTIONS & MENTAL STATES ──
+  {es:"alegrarse",en:"to be glad / to cheer up",hint:"verb",decoys:["to sadden","to worry","to calm down"]},
+  {es:"asustarse",en:"to get scared",hint:"verb",decoys:["to get angry","to get bored","to get lost"]},
+  {es:"avergonzarse",en:"to feel ashamed",hint:"verb",decoys:["to feel proud","to feel confused","to feel relieved"]},
+  {es:"arrepentirse",en:"to regret / to repent",hint:"verb",decoys:["to repeat","to remember","to return"]},
+  {es:"quejarse",en:"to complain",hint:"verb",decoys:["to question","to quiet down","to question"]},
+  {es:"emocionarse",en:"to get excited / to be moved",hint:"verb",decoys:["to calm down","to get bored","to get angry"]},
+  {es:"enojarse",en:"to get angry",hint:"verb",decoys:["to get tired","to get confused","to get lost"]},
+  {es:"preocuparse",en:"to worry",hint:"verb",decoys:["to relax","to prepare","to proclaim"]},
+  {es:"aburrirse",en:"to get bored",hint:"verb",decoys:["to get excited","to get lost","to get hungry"]},
+  {es:"confiar",en:"to trust",hint:"verb",decoys:["to confuse","to confirm","to confine"]},
+  {es:"desconfiar",en:"to distrust",hint:"verb",decoys:["to trust","to discover","to disconnect"]},
+  {es:"extrañar",en:"to miss / to find strange",hint:"verb",decoys:["to extend","to examine","to exclude"]},
+  {es:"ilusionarse",en:"to get excited / to have hopes",hint:"verb",decoys:["to be disappointed","to get confused","to get nervous"]},
+  {es:"decepcionarse",en:"to be disappointed",hint:"verb",decoys:["to be surprised","to be delighted","to be motivated"]},
+  {es:"calmarse",en:"to calm down",hint:"verb",decoys:["to get angry","to worry","to get nervous"]},
+  {es:"odiar",en:"to hate",hint:"verb",decoys:["to love","to tolerate","to accept"]},
+  {es:"envidiar",en:"to envy",hint:"verb",decoys:["to invite","to avoid","to admire"]},
+  {es:"admirar",en:"to admire",hint:"verb",decoys:["to admit","to advise","to adopt"]},
+  {es:"lamentar",en:"to regret / to lament",hint:"verb",decoys:["to blame","to celebrate","to ignore"]},
+  {es:"angustiarse",en:"to feel anguished / to feel anxious",hint:"verb",decoys:["to relax","to feel bored","to feel curious"]},
+  {es:"sorprenderse",en:"to be surprised",hint:"verb",decoys:["to be expected","to be ignored","to be amused"]},
+  {es:"animarse",en:"to cheer up / to feel like doing",hint:"verb",decoys:["to lose heart","to argue","to slow down"]},
+  {es:"resignarse",en:"to resign oneself",hint:"verb",decoys:["to resist","to react","to refuse"]},
+  {es:"frustrarse",en:"to get frustrated",hint:"verb",decoys:["to get encouraged","to get confused","to get distracted"]},
+  {es:"avergonzar",en:"to embarrass",hint:"verb",decoys:["to encourage","to avoid","to admire"]},
+
+  // ── NOUNS – PEOPLE & SOCIETY ──
+  {es:"el vecino",en:"the neighbor",hint:"noun",decoys:["the stranger","the relative","the landlord"]},
+  {es:"el testigo",en:"the witness",hint:"noun",decoys:["the victim","the suspect","the judge"]},
+  {es:"el funcionario",en:"the civil servant / government employee",hint:"noun",decoys:["the volunteer","the contractor","the manager"]},
+  {es:"el periodista",en:"the journalist",hint:"noun",decoys:["the editor","the broadcaster","the professor"]},
+  {es:"el bombero",en:"the firefighter",hint:"noun",decoys:["the police officer","the soldier","the paramedic"]},
+  {es:"el anciano",en:"the elderly man",hint:"noun",decoys:["the child","the teenager","the adult"]},
+  {es:"la pareja",en:"the couple / the partner",hint:"noun",decoys:["the friendship","the group","the team"]},
+  {es:"el huérfano",en:"the orphan",hint:"noun",decoys:["the refugee","the widow","the volunteer"]},
+  {es:"el extranjero",en:"the foreigner",hint:"noun",decoys:["the citizen","the native","the resident"]},
+  {es:"el herrero",en:"the blacksmith",hint:"noun",decoys:["the carpenter","the plumber","the mason"]},
+  {es:"la multitud",en:"the crowd",hint:"noun",decoys:["the army","the audience","the committee"]},
+  {es:"el sindicato",en:"the labor union",hint:"noun",decoys:["the company","the association","the government"]},
+  {es:"la pandilla",en:"the gang",hint:"noun",decoys:["the family","the committee","the neighborhood"]},
+  {es:"el defensor",en:"the defender / advocate",hint:"noun",decoys:["the attacker","the judge","the observer"]},
+  {es:"el heredero",en:"the heir",hint:"noun",decoys:["the owner","the donor","the creditor"]},
+  {es:"el huésped",en:"the guest / the host",hint:"noun",decoys:["the tenant","the visitor","the neighbor"]},
+  {es:"el mendigo",en:"the beggar",hint:"noun",decoys:["the worker","the merchant","the traveler"]},
+  {es:"el enfermero",en:"the nurse",hint:"noun",decoys:["the doctor","the pharmacist","the surgeon"]},
+  {es:"la encuesta",en:"the survey / the poll",hint:"noun",decoys:["the report","the census","the interview"]},
+  {es:"el discurso",en:"the speech",hint:"noun",decoys:["the argument","the discussion","the lecture"]},
+  {es:"la manifestación",en:"the demonstration / protest",hint:"noun",decoys:["the celebration","the election","the ceremony"]},
+  {es:"el acuerdo",en:"the agreement",hint:"noun",decoys:["the argument","the decision","the contract"]},
+  {es:"el recuerdo",en:"the memory / the souvenir",hint:"noun",decoys:["the dream","the regret","the reminder"]},
+  {es:"el consejo",en:"the advice",hint:"noun",decoys:["the council","the decision","the warning"]},
+  {es:"la costumbre",en:"the custom / the habit",hint:"noun",decoys:["the costume","the culture","the tradition"]},
+  {es:"el apodo",en:"the nickname",hint:"noun",decoys:["the surname","the title","the alias"]},
+  {es:"la mentira",en:"the lie",hint:"noun",decoys:["the truth","the secret","the rumor"]},
+  {es:"el rumor",en:"the rumor",hint:"noun",decoys:["the noise","the news","the gossip"]},
+
+  // ── NOUNS – HOME & EVERYDAY OBJECTS ──
+  {es:"el cajón",en:"the drawer",hint:"noun",decoys:["the cabinet","the shelf","the closet"]},
+  {es:"la almohada",en:"the pillow",hint:"noun",decoys:["the blanket","the mattress","the sheet"]},
+  {es:"el grifo",en:"the faucet / tap",hint:"noun",decoys:["the drain","the pipe","the valve"]},
+  {es:"la nevera",en:"the refrigerator",hint:"noun",decoys:["the freezer","the oven","the microwave"]},
+  {es:"el enchufe",en:"the plug / electrical outlet",hint:"noun",decoys:["the switch","the socket","the cord"]},
+  {es:"la escalera",en:"the staircase / the ladder",hint:"noun",decoys:["the elevator","the ramp","the corridor"]},
+  {es:"el sótano",en:"the basement",hint:"noun",decoys:["the attic","the garage","the hallway"]},
+  {es:"el techo",en:"the ceiling / the roof",hint:"noun",decoys:["the floor","the wall","the foundation"]},
+  {es:"la alfombra",en:"the carpet / the rug",hint:"noun",decoys:["the curtain","the tile","the mat"]},
+  {es:"el espejo",en:"the mirror",hint:"noun",decoys:["the window","the painting","the frame"]},
+  {es:"la llave",en:"the key / the faucet wrench",hint:"noun",decoys:["the lock","the door","the handle"]},
+  {es:"el timbre",en:"the doorbell",hint:"noun",decoys:["the lock","the knocker","the intercom"]},
+  {es:"la basura",en:"the trash / garbage",hint:"noun",decoys:["the dirt","the waste","the recycling"]},
+  {es:"el recipiente",en:"the container",hint:"noun",decoys:["the receipt","the ingredient","the recipient"]},
+  {es:"la percha",en:"the hanger / the coat hook",hint:"noun",decoys:["the shelf","the hook","the rack"]},
+  {es:"el colchón",en:"the mattress",hint:"noun",decoys:["the pillow","the blanket","the bed frame"]},
+  {es:"la bañera",en:"the bathtub",hint:"noun",decoys:["the shower","the sink","the toilet"]},
+  {es:"el interruptor",en:"the light switch",hint:"noun",decoys:["the plug","the fuse","the circuit breaker"]},
+  {es:"la maceta",en:"the flowerpot",hint:"noun",decoys:["the vase","the tray","the basket"]},
+  {es:"el rincón",en:"the corner (interior)",hint:"noun",decoys:["the edge","the angle","the side"]},
+  {es:"la vitrina",en:"the display case / glass cabinet",hint:"noun",decoys:["the window","the mirror","the screen"]},
+  {es:"el tendedero",en:"the clothesline / drying rack",hint:"noun",decoys:["the laundry basket","the ironing board","the dryer"]},
+  {es:"la cerradura",en:"the lock",hint:"noun",decoys:["the key","the handle","the bolt"]},
+  {es:"el cubo",en:"the bucket / the cube",hint:"noun",decoys:["the barrel","the jar","the bin"]},
+  {es:"la palangana",en:"the washbasin / basin",hint:"noun",decoys:["the bucket","the bowl","the tub"]},
+
+  // ── NOUNS – NATURE & ENVIRONMENT ──
+  {es:"el rayo",en:"the lightning bolt",hint:"noun",decoys:["the thunder","the storm","the hail"]},
+  {es:"la sequía",en:"the drought",hint:"noun",decoys:["the flood","the frost","the storm"]},
+  {es:"el terremoto",en:"the earthquake",hint:"noun",decoys:["the volcano","the tsunami","the landslide"]},
+  {es:"la ribera",en:"the riverbank / the shore",hint:"noun",decoys:["the cliff","the beach","the valley"]},
+  {es:"el musgo",en:"the moss",hint:"noun",decoys:["the lichen","the fern","the weed"]},
+  {es:"la hoja",en:"the leaf",hint:"noun",decoys:["the branch","the root","the bark"]},
+  {es:"el charco",en:"the puddle",hint:"noun",decoys:["the pond","the lake","the stream"]},
+  {es:"el arbusto",en:"the shrub / the bush",hint:"noun",decoys:["the tree","the flower","the cactus"]},
+  {es:"la cueva",en:"the cave",hint:"noun",decoys:["the tunnel","the mine","the cliff"]},
+  {es:"el prado",en:"the meadow",hint:"noun",decoys:["the forest","the hill","the valley"]},
+  {es:"el oleaje",en:"the surf / the waves",hint:"noun",decoys:["the tide","the current","the foam"]},
+  {es:"la niebla",en:"the fog",hint:"noun",decoys:["the cloud","the mist","the haze"]},
+  {es:"el granizo",en:"the hail",hint:"noun",decoys:["the sleet","the frost","the snow"]},
+  {es:"la tormenta",en:"the storm",hint:"noun",decoys:["the drizzle","the breeze","the hurricane"]},
+  {es:"el amanecer",en:"the sunrise / the dawn",hint:"noun",decoys:["the sunset","the dusk","the noon"]},
+  {es:"el atardecer",en:"the sunset / the dusk",hint:"noun",decoys:["the sunrise","the dawn","the twilight"]},
+  {es:"la cascada",en:"the waterfall",hint:"noun",decoys:["the river","the stream","the rapids"]},
+  {es:"el pantano",en:"the swamp / the reservoir",hint:"noun",decoys:["the lake","the marsh","the lagoon"]},
+  {es:"la llanura",en:"the plain / the flatland",hint:"noun",decoys:["the mountain","the valley","the plateau"]},
+  {es:"el acantilado",en:"the cliff",hint:"noun",decoys:["the rock","the dune","the hill"]},
+  {es:"la marea",en:"the tide",hint:"noun",decoys:["the current","the wave","the surge"]},
+  {es:"el volcán",en:"the volcano",hint:"noun",decoys:["the mountain","the geyser","the crater"]},
+
+  // ── NOUNS – WORK & MONEY ──
+  {es:"el sueldo",en:"the salary",hint:"noun",decoys:["the bonus","the tip","the pension"]},
+  {es:"el plazo",en:"the deadline / the term",hint:"noun",decoys:["the plan","the place","the period"]},
+  {es:"la factura",en:"the invoice / the bill",hint:"noun",decoys:["the receipt","the contract","the estimate"]},
+  {es:"el socio",en:"the business partner / the member",hint:"noun",decoys:["the employee","the client","the shareholder"]},
+  {es:"la reunión",en:"the meeting",hint:"noun",decoys:["the conference","the seminar","the workshop"]},
+  {es:"el informe",en:"the report",hint:"noun",decoys:["the form","the notice","the summary"]},
+  {es:"la sede",en:"the headquarters",hint:"noun",decoys:["the branch","the office","the factory"]},
+  {es:"el ascenso",en:"the promotion",hint:"noun",decoys:["the raise","the bonus","the transfer"]},
+  {es:"el despido",en:"the dismissal / the layoff",hint:"noun",decoys:["the resignation","the retirement","the suspension"]},
+  {es:"la deuda",en:"the debt",hint:"noun",decoys:["the loan","the tax","the fine"]},
+  {es:"el préstamo",en:"the loan",hint:"noun",decoys:["the debt","the savings","the investment"]},
+  {es:"el impuesto",en:"the tax",hint:"noun",decoys:["the fine","the fee","the duty"]},
+  {es:"la ganancia",en:"the profit / the gain",hint:"noun",decoys:["the loss","the expense","the revenue"]},
+  {es:"la pérdida",en:"the loss",hint:"noun",decoys:["the profit","the gain","the expense"]},
+  {es:"el contrato",en:"the contract",hint:"noun",decoys:["the agreement","the policy","the permit"]},
+  {es:"la huelga",en:"the strike",hint:"noun",decoys:["the protest","the boycott","the walkout"]},
+  {es:"el cargo",en:"the position / the charge",hint:"noun",decoys:["the career","the task","the role"]},
+  {es:"la sucursal",en:"the branch (of a company)",hint:"noun",decoys:["the headquarters","the warehouse","the office"]},
+  {es:"el socio",en:"the partner / the member",hint:"noun",decoys:["the boss","the client","the investor"]},
+  {es:"el trabajador autónomo",en:"the freelancer / the self-employed",hint:"noun",decoys:["the intern","the contractor","the employee"]},
+  {es:"la jornada",en:"the workday / the shift",hint:"noun",decoys:["the schedule","the break","the overtime"]},
+  {es:"el sindicato",en:"the union",hint:"noun",decoys:["the committee","the association","the board"]},
+
+  // ── ADJECTIVES ──
+  {es:"orgulloso",en:"proud",hint:"adjective",decoys:["ashamed","jealous","stubborn"]},
+  {es:"celoso",en:"jealous",hint:"adjective",decoys:["proud","shy","angry"]},
+  {es:"terco",en:"stubborn",hint:"adjective",decoys:["flexible","patient","calm"]},
+  {es:"ingenuo",en:"naive",hint:"adjective",decoys:["cunning","wise","suspicious"]},
+  {es:"astuto",en:"clever / cunning",hint:"adjective",decoys:["naive","stupid","careless"]},
+  {es:"amable",en:"kind / friendly",hint:"adjective",decoys:["rude","cold","distant"]},
+  {es:"tacaño",en:"stingy / miserly",hint:"adjective",decoys:["generous","thrifty","wealthy"]},
+  {es:"generoso",en:"generous",hint:"adjective",decoys:["stingy","selfish","greedy"]},
+  {es:"perezoso",en:"lazy",hint:"adjective",decoys:["hardworking","active","energetic"]},
+  {es:"trabajador",en:"hardworking",hint:"adjective",decoys:["lazy","inactive","slow"]},
+  {es:"valiente",en:"brave",hint:"adjective",decoys:["cowardly","reckless","timid"]},
+  {es:"cobarde",en:"cowardly",hint:"adjective",decoys:["brave","cautious","bold"]},
+  {es:"honesto",en:"honest",hint:"adjective",decoys:["dishonest","deceptive","corrupt"]},
+  {es:"mentiroso",en:"lying / liar",hint:"adjective",decoys:["honest","truthful","sincere"]},
+  {es:"curioso",en:"curious",hint:"adjective",decoys:["indifferent","bored","distracted"]},
+  {es:"sensato",en:"sensible / wise",hint:"adjective",decoys:["foolish","reckless","impulsive"]},
+  {es:"descuidado",en:"careless / neglectful",hint:"adjective",decoys:["careful","thorough","attentive"]},
+  {es:"cuidadoso",en:"careful",hint:"adjective",decoys:["careless","reckless","inattentive"]},
+  {es:"agotado",en:"exhausted",hint:"adjective",decoys:["energized","rested","refreshed"]},
+  {es:"asustado",en:"scared / frightened",hint:"adjective",decoys:["brave","calm","excited"]},
+  {es:"aliviado",en:"relieved",hint:"adjective",decoys:["worried","tense","stressed"]},
+  {es:"decepcionado",en:"disappointed",hint:"adjective",decoys:["satisfied","pleased","excited"]},
+  {es:"orgulloso",en:"proud",hint:"adjective",decoys:["ashamed","humble","embarrassed"]},
+  {es:"avergonzado",en:"ashamed / embarrassed",hint:"adjective",decoys:["proud","confident","relaxed"]},
+  {es:"satisfecho",en:"satisfied",hint:"adjective",decoys:["disappointed","bored","dissatisfied"]},
+  {es:"impaciente",en:"impatient",hint:"adjective",decoys:["patient","calm","relaxed"]},
+  {es:"disponible",en:"available",hint:"adjective",decoys:["busy","unavailable","occupied"]},
+  {es:"adecuado",en:"adequate / suitable",hint:"adjective",decoys:["inadequate","excessive","scarce"]},
+  {es:"inesperado",en:"unexpected",hint:"adjective",decoys:["expected","planned","predictable"]},
+  {es:"capaz",en:"capable",hint:"adjective",decoys:["incapable","clumsy","helpless"]},
+  {es:"incapaz",en:"incapable / unable",hint:"adjective",decoys:["capable","skilled","gifted"]},
+  {es:"poderoso",en:"powerful",hint:"adjective",decoys:["weak","fragile","helpless"]},
+  {es:"cotidiano",en:"daily / everyday",hint:"adjective",decoys:["occasional","rare","special"]},
+
+  // ── ADVERBS, CONNECTORS & TRANSITION PHRASES ──
+  {es:"a pesar de",en:"despite / in spite of",hint:"phrase",decoys:["because of","thanks to","due to"]},
+  {es:"además",en:"furthermore / in addition",hint:"adverb",decoys:["however","instead","otherwise"]},
+  {es:"en cambio",en:"on the other hand",hint:"phrase",decoys:["in conclusion","in summary","for example"]},
+  {es:"en cuanto a",en:"as for / regarding",hint:"phrase",decoys:["in order to","instead of","according to"]},
+  {es:"por lo tanto",en:"therefore",hint:"phrase",decoys:["however","meanwhile","nevertheless"]},
+  {es:"a menudo",en:"often",hint:"adverb",decoys:["rarely","always","never"]},
+  {es:"de vez en cuando",en:"from time to time",hint:"phrase",decoys:["all the time","never again","right away"]},
+  {es:"en seguida",en:"right away / immediately",hint:"phrase",decoys:["later on","eventually","gradually"]},
+  {es:"a veces",en:"sometimes",hint:"adverb",decoys:["always","never","often"]},
+  {es:"de repente",en:"suddenly",hint:"adverb",decoys:["slowly","gradually","eventually"]},
+  {es:"en realidad",en:"in reality / actually",hint:"phrase",decoys:["in theory","in general","in practice"]},
+  {es:"en fin",en:"in short / anyway",hint:"phrase",decoys:["to begin with","in addition","for example"]},
+  {es:"siempre y cuando",en:"as long as",hint:"phrase",decoys:["even though","unless","in case"]},
+  {es:"a causa de",en:"because of / due to",hint:"phrase",decoys:["in spite of","instead of","along with"]},
+  {es:"con tal de que",en:"provided that",hint:"phrase",decoys:["in case that","even though","as soon as"]},
+  {es:"ya que",en:"since / given that",hint:"phrase",decoys:["unless","although","even if"]},
+  {es:"así que",en:"so / therefore",hint:"phrase",decoys:["although","unless","even though"]},
+  {es:"aunque",en:"although / even though",hint:"conjunction",decoys:["because","since","unless"]},
+  {es:"apenas",en:"barely / as soon as",hint:"adverb",decoys:["already","still","yet"]},
+  {es:"todavía",en:"still / yet",hint:"adverb",decoys:["already","no longer","soon"]},
+  {es:"en cuanto",en:"as soon as",hint:"phrase",decoys:["as long as","in case","unless"]},
+  {es:"mientras tanto",en:"meanwhile",hint:"phrase",decoys:["therefore","afterwards","instead"]},
+
+  // ── IDIOMS & SET PHRASES ──
+  {es:"estar harto",en:"to be fed up",hint:"phrase",decoys:["to be satisfied","to be hungry","to be full"]},
+  {es:"tener ganas de",en:"to feel like / to want to",hint:"phrase",decoys:["to be afraid of","to be tired of","to be proud of"]},
+  {es:"no dar abasto",en:"to not be able to cope / to be overwhelmed",hint:"phrase",decoys:["to give up easily","to have plenty of time","to be well organized"]},
+  {es:"llevar a cabo",en:"to carry out / to accomplish",hint:"phrase",decoys:["to give up","to put aside","to leave behind"]},
+  {es:"hacer caso",en:"to pay attention / to obey",hint:"phrase",decoys:["to make a case","to ignore","to pretend"]},
+  {es:"tener en cuenta",en:"to take into account",hint:"phrase",decoys:["to count on someone","to forget about","to disagree with"]},
+  {es:"caer bien",en:"to be liked / to make a good impression",hint:"phrase",decoys:["to fall well","to be disliked","to seem suspicious"]},
+  {es:"caer mal",en:"to be disliked",hint:"phrase",decoys:["to fall badly","to be liked","to seem polite"]},
+  {es:"ponerse al día",en:"to catch up / to get up to date",hint:"phrase",decoys:["to fall behind","to take a day off","to start fresh"]},
+  {es:"perder la paciencia",en:"to lose patience",hint:"phrase",decoys:["to remain calm","to gain patience","to be patient"]},
+  {es:"meter la pata",en:"to put one's foot in it / to make a blunder",hint:"phrase",decoys:["to make a plan","to step carefully","to be smart"]},
+  {es:"estar al tanto",en:"to be up to date / to be aware",hint:"phrase",decoys:["to be confused","to be behind","to be uninformed"]},
+  {es:"de golpe",en:"all of a sudden",hint:"phrase",decoys:["gradually","repeatedly","eventually"]},
+  {es:"a lo mejor",en:"maybe / perhaps",hint:"phrase",decoys:["at best","for better","at least"]},
+  {es:"dar a entender",en:"to imply / to suggest",hint:"phrase",decoys:["to explain clearly","to misunderstand","to give away"]},
+  {es:"tener en mente",en:"to have in mind",hint:"phrase",decoys:["to forget","to lose track","to change one's mind"]},
+  {es:"hacerse ilusiones",en:"to get one's hopes up",hint:"phrase",decoys:["to face reality","to feel hopeless","to make plans"]},
+  {es:"no hay manera",en:"there's no way",hint:"phrase",decoys:["it's possible","there's a chance","it might happen"]},
+  {es:"dar lo mismo",en:"to make no difference / to not matter",hint:"phrase",decoys:["to make a difference","to matter a lot","to be unfair"]},
+  {es:"a propósito",en:"on purpose / by the way",hint:"phrase",decoys:["by accident","in a hurry","without thinking"]},
+  {es:"en absoluto",en:"not at all / absolutely",hint:"phrase",decoys:["completely","partly","to some extent"]},
+  {es:"de acuerdo",en:"agreed / okay",hint:"phrase",decoys:["in doubt","in disagreement","in question"]},
+  {es:"a tiempo",en:"on time",hint:"phrase",decoys:["late","early","ahead of time"]},
+  {es:"fuera de lugar",en:"out of place",hint:"phrase",decoys:["in the right place","at the right time","perfectly suited"]},
+  {es:"en el fondo",en:"deep down / at heart",hint:"phrase",decoys:["on the surface","in the end","at first"]},
+  {es:"tener razón",en:"to be right",hint:"phrase",decoys:["to be wrong","to have a reason","to make sense"]},
+  {es:"darse prisa",en:"to hurry up",hint:"phrase",decoys:["to slow down","to take a break","to be on time"]},
+  {es:"al fin y al cabo",en:"after all / in the end",hint:"phrase",decoys:["right away","at first","in the beginning"]},
+];
+
+let audioCtx=null;
+function unlockAudio(){
+  if(audioCtx)return;
+  audioCtx=new(window.AudioContext||window.webkitAudioContext)();
+  const buf=audioCtx.createBuffer(1,1,22050);
+  const src=audioCtx.createBufferSource();
+  src.buffer=buf;src.connect(audioCtx.destination);src.start(0);
+}
+function playTone(type){
+  if(!audioCtx)return;
+  if(audioCtx.state==='suspended')audioCtx.resume();
+  const ctx=audioCtx,now=ctx.currentTime;
+  if(type==='correct'){
+    [523.25,659.25,783.99].forEach((freq,i)=>{
+      const o=ctx.createOscillator(),g=ctx.createGain();
+      o.connect(g);g.connect(ctx.destination);
+      o.type='sine';
+      o.frequency.setValueAtTime(freq,now+i*0.12);
+      g.gain.setValueAtTime(0.28,now+i*0.12);
+      g.gain.exponentialRampToValueAtTime(0.001,now+i*0.12+0.35);
+      o.start(now+i*0.12);o.stop(now+i*0.12+0.4);
+    });
+  }else{
+    const o=ctx.createOscillator(),g=ctx.createGain();
+    o.connect(g);g.connect(ctx.destination);
+    o.type='sawtooth';
+    o.frequency.setValueAtTime(300,now);
+    o.frequency.exponentialRampToValueAtTime(160,now+0.4);
+    g.gain.setValueAtTime(0.18,now);
+    g.gain.exponentialRampToValueAtTime(0.001,now+0.5);
+    o.start(now);o.stop(now+0.55);
+  }
+}
+let voices=[];
+function loadVoices(){voices=window.speechSynthesis?speechSynthesis.getVoices():[];}
+function speakSpanish(text){
+  if(!window.speechSynthesis)return;
+  speechSynthesis.cancel();
+  const u=new SpeechSynthesisUtterance(text);
+  u.lang='es-MX';u.rate=0.88;u.pitch=1.0;
+  if(!voices.length)loadVoices();
+  const v=voices.find(v=>['es-MX','es-US','es-419'].includes(v.lang))||voices.find(v=>v.lang.startsWith('es'));
+  if(v)u.voice=v;
+  speechSynthesis.speak(u);
+}
+let questions=[],current=0,score=0,answered=false;
+function shuffle(a){
+  a=[...a];
+  for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];}
+  return a;
+}
+document.getElementById('start-btn').addEventListener('click',()=>{
+  unlockAudio();loadVoices();
+  document.getElementById('splash-screen').style.display='none';
+  document.getElementById('quiz-screen').style.display='block';
+  initQuiz();
+});
+function initQuiz(){
+  questions=shuffle(wordBank).slice(0,20);
+  current=0;score=0;answered=false;
+  buildDots();loadQuestion();
+}
+function restartQuiz(){
+  document.getElementById('results-screen').style.display='none';
+  document.getElementById('quiz-screen').style.display='block';
+  initQuiz();
+}
+function buildDots(){
+  const row=document.getElementById('dots-row');row.innerHTML='';
+  for(let i=0;i<20;i++){const d=document.createElement('div');d.className='dot';d.id='dot-'+i;row.appendChild(d);}
+}
+function loadQuestion(){
+  answered=false;
+  const q=questions[current];
+  document.getElementById('progress-bar').style.width=(current/20*100)+'%';
+  document.getElementById('progress-label').textContent=current+' / 20';
+  document.getElementById('score-display').textContent=score;
+  document.getElementById('word-number').textContent='Word '+(current+1);
+  document.getElementById('spanish-word').textContent=q.es;
+  document.getElementById('word-hint').textContent=q.hint;
+  document.getElementById('word-card').className='word-card';
+  const fb=document.getElementById('feedback');fb.textContent='';fb.className='feedback';
+  const choices=shuffle([q.en,...q.decoys.slice(0,3)]);
+  const el=document.getElementById('choices');el.innerHTML='';
+  choices.forEach(c=>{
+    const b=document.createElement('button');
+    b.className='choice-btn';b.textContent=c;
+    b.addEventListener('click',()=>handleAnswer(c,q.en,b));
+    el.appendChild(b);
+  });
+  document.getElementById('next-btn').className='next-btn';
+  setTimeout(()=>speakSpanish(q.es),350);
+}
+function handleAnswer(chosen,correct,btn){
+  if(answered)return;answered=true;
+  const ok=chosen===correct;
+  const card=document.getElementById('word-card');
+  const fb=document.getElementById('feedback');
+  const nb=document.getElementById('next-btn');
+  document.querySelectorAll('.choice-btn').forEach(b=>{
+    b.disabled=true;
+    if(b.textContent===correct)b.classList.add('correct');
+  });
+  if(ok){
+    score++;btn.classList.add('correct');
+    card.classList.add('correct','pulse-correct');
+    fb.textContent='✓ Correct! ¡Bien hecho!';fb.className='feedback show-correct';
+  }else{
+    btn.classList.add('wrong');card.classList.add('wrong','shake');
+    fb.textContent='✗ Incorrect. The answer is: "'+correct+'"';fb.className='feedback show-wrong';
+    setTimeout(()=>card.classList.remove('shake'),400);
+  }
+  playTone(ok?'correct':'wrong');
+  const dot=document.getElementById('dot-'+current);
+  if(dot)dot.className='dot '+(ok?'correct':'wrong');
+  document.getElementById('score-display').textContent=score;
+  nb.className='next-btn visible';
+  nb.textContent=current===19?'See Results →':'Next word →';
+}
+document.getElementById('next-btn').addEventListener('click',()=>{
+  current++;current>=20?showResults():loadQuestion();
+});
+document.getElementById('speak-btn').addEventListener('click',()=>{
+  const w=document.getElementById('spanish-word').textContent;
+  if(w&&w!=='—')speakSpanish(w);
+});
+function showResults(){
+  document.getElementById('quiz-screen').style.display='none';
+  document.getElementById('results-screen').style.display='block';
+  const champ=score>=17;
+  document.getElementById('results-emoji').textContent=champ?'🏆':score>=12?'💪':'📚';
+  const t=document.getElementById('results-title');
+  t.textContent=champ?'¡Campeón!':score>=12?'¡Buen trabajo!':'¡Sigue practicando!';
+  t.className='results-title'+(champ?' results-champ':'');
+  const msg=champ?"Outstanding! You're a true Spanish champion 🌟":score>=12?"Solid work — keep building on this!":"Keep studying — you'll get there!";
+  document.getElementById('results-score').innerHTML='You got <strong>'+score+' / 20</strong> correct.<br><small style="color:var(--muted)">'+msg+'</small>';
+}
+if(window.speechSynthesis){speechSynthesis.onvoiceschanged=loadVoices;loadVoices();}
+</script>
+</body>
+</html>

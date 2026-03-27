@@ -1,0 +1,48 @@
+{
+  "name": "language-quiz",
+  "version": "1.0.0",
+  "description": "Multilingual vocabulary and sentence quiz app",
+  "main": "main.js",
+  "scripts": {
+    "start": "electron .",
+    "build:mac": "electron-builder --mac",
+    "build:win": "electron-builder --win",
+    "build:all": "electron-builder --mac --win"
+  },
+  "build": {
+    "appId": "com.languagequiz.app",
+    "productName": "Language Quiz",
+    "directories": {
+      "output": "dist"
+    },
+    "files": [
+      "main.js",
+      "launcher.html",
+      "quizzes/**/*"
+    ],
+    "mac": {
+      "category": "public.app-category.education",
+      "icon": "icons/icon.png",
+      "identity": null,
+      "target": [
+        { "target": "dmg", "arch": ["x64", "arm64"] }
+      ]
+    },
+    "win": {
+      "icon": "icons/icon.png",
+      "target": [
+        { "target": "nsis", "arch": ["x64"] }
+      ]
+    },
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true,
+      "createDesktopShortcut": true,
+      "createStartMenuShortcut": true
+    }
+  },
+  "devDependencies": {
+    "electron": "^28.0.0",
+    "electron-builder": "^24.0.0"
+  }
+}

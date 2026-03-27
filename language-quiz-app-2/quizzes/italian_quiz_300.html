@@ -1,0 +1,579 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>Italiano — Italian Quiz</title>
+<link href="https://fonts.googleapis.com/css2?family=Libre+Baskerville:wght@400;700&family=Inter:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg:#0c1108;--card:#141a10;--border:#243020;
+    --accent:#009246;--accent2:#ce2b37;--accent3:#f5f0e8;
+    --correct:#4be87e;--wrong:#e84b4b;
+    --text:#edf2e8;--muted:#6a7a62;--radius:12px;
+  }
+  *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
+  body{background:var(--bg);color:var(--text);font-family:'Inter',sans-serif;min-height:100vh;min-height:-webkit-fill-available;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:20px;overflow-x:hidden;}
+  body::before{content:'';position:fixed;inset:0;background:
+    radial-gradient(ellipse 65% 50% at 5% 10%,rgba(0,146,70,0.09) 0%,transparent 55%),
+    radial-gradient(ellipse 55% 45% at 95% 85%,rgba(206,43,55,0.08) 0%,transparent 55%);
+    pointer-events:none;z-index:0;}
+  .container{position:relative;z-index:1;width:100%;max-width:560px;}
+
+  /* SPLASH */
+  #splash-screen{text-align:center;padding:20px;}
+  .splash-logo{font-family:'Libre Baskerville',serif;font-size:clamp(2.8rem,9vw,4.4rem);font-weight:700;letter-spacing:-1px;line-height:1;margin-bottom:4px;}
+  .splash-logo .gr{color:var(--accent);}
+  .splash-logo .rd{color:var(--accent2);}
+  .splash-tagline{font-family:'Inter',sans-serif;font-size:0.78rem;color:var(--muted);letter-spacing:0.22em;text-transform:uppercase;margin-bottom:32px;}
+  .splash-features{list-style:none;text-align:left;display:inline-flex;flex-direction:column;gap:14px;margin-bottom:38px;background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:22px 26px;width:100%;max-width:380px;}
+  .splash-features li{display:flex;align-items:center;gap:12px;font-size:0.93rem;color:var(--text);}
+  .splash-features li .icon{font-size:1.3rem;width:28px;flex-shrink:0;text-align:center;}
+  .start-btn{background:var(--accent);color:#fff;border:none;border-radius:var(--radius);font-family:'Inter',sans-serif;font-size:1.05rem;font-weight:500;padding:18px 56px;cursor:pointer;letter-spacing:0.03em;display:inline-block;}
+  .start-btn:active{transform:scale(0.96);background:#006e35;}
+  .splash-note{color:var(--muted);font-size:0.74rem;margin-top:14px;}
+
+  /* HEADER */
+  header{text-align:center;margin-bottom:24px;}
+  .logo{font-family:'Libre Baskerville',serif;font-size:clamp(1.9rem,5vw,2.6rem);font-weight:700;letter-spacing:-0.5px;}
+  .logo .gr{color:var(--accent);}
+  .logo .rd{color:var(--accent2);}
+  .subtitle{color:var(--muted);font-size:0.72rem;letter-spacing:0.16em;text-transform:uppercase;margin-top:4px;}
+
+  /* PROGRESS */
+  .progress-row{display:flex;align-items:center;gap:10px;margin-bottom:16px;}
+  .progress-bar-wrap{flex:1;height:4px;background:var(--border);border-radius:99px;overflow:hidden;}
+  .progress-bar-fill{height:100%;background:linear-gradient(90deg,var(--accent),var(--accent2));border-radius:99px;transition:width 0.5s cubic-bezier(.4,0,.2,1);}
+  .progress-label{font-size:0.72rem;color:var(--muted);white-space:nowrap;}
+  .score-badge{background:var(--card);border:1px solid var(--border);border-radius:99px;padding:4px 12px;font-size:0.78rem;font-weight:500;color:#8aba80;white-space:nowrap;}
+
+  /* WORD CARD */
+  .word-card{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:34px 24px 24px;margin-bottom:14px;text-align:center;position:relative;transition:border-color 0.3s;}
+  .word-card.correct{border-color:var(--correct);}
+  .word-card.wrong{border-color:var(--wrong);}
+  .word-number{position:absolute;top:12px;left:16px;font-size:0.65rem;color:var(--muted);letter-spacing:0.1em;text-transform:uppercase;}
+  .speak-btn{position:absolute;top:10px;right:14px;background:none;border:1px solid var(--border);border-radius:99px;color:#8aba80;font-size:1rem;cursor:pointer;padding:4px 10px;line-height:1.5;}
+  .speak-btn:active{background:rgba(0,146,70,0.15);border-color:var(--accent);}
+  .italian-word{font-family:'Libre Baskerville',serif;font-size:clamp(1.8rem,7vw,3rem);font-weight:700;letter-spacing:-0.5px;margin:10px 0 6px;line-height:1.2;}
+  .word-hint{font-size:0.72rem;color:var(--muted);letter-spacing:0.1em;text-transform:uppercase;}
+
+  /* CHOICES */
+  .choices{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin-bottom:12px;}
+  .choice-btn{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);color:var(--text);font-family:'Inter',sans-serif;font-size:0.88rem;font-weight:400;padding:16px 10px;cursor:pointer;text-align:center;line-height:1.3;}
+  .choice-btn:active:not(:disabled){background:rgba(0,146,70,0.08);border-color:var(--accent);transform:scale(0.97);}
+  .choice-btn.correct{background:rgba(75,232,126,0.12);border-color:var(--correct);color:var(--correct);font-weight:500;}
+  .choice-btn.wrong{background:rgba(232,75,75,0.12);border-color:var(--wrong);color:var(--wrong);font-weight:500;}
+  .choice-btn:disabled{cursor:default;}
+
+  /* FEEDBACK */
+  .feedback{min-height:34px;text-align:center;font-size:0.87rem;color:var(--muted);margin-bottom:10px;}
+  .feedback.show-correct{color:var(--correct);font-weight:500;}
+  .feedback.show-wrong{color:var(--wrong);font-weight:500;}
+
+  /* NEXT */
+  .next-btn{width:100%;background:var(--accent);color:#fff;border:none;border-radius:var(--radius);font-family:'Inter',sans-serif;font-size:0.95rem;font-weight:500;padding:16px;cursor:pointer;display:none;}
+  .next-btn:active{background:#006e35;transform:scale(0.98);}
+  .next-btn.visible{display:block;}
+
+  /* DOTS */
+  .dots-row{display:flex;gap:5px;flex-wrap:wrap;justify-content:center;margin-top:12px;}
+  .dot{width:10px;height:10px;border-radius:50%;background:var(--border);transition:background 0.3s;}
+  .dot.correct{background:var(--correct);}
+  .dot.wrong{background:var(--wrong);}
+
+  /* RESULTS */
+  #results-screen{display:none;text-align:center;padding:30px 20px;}
+  .results-emoji{font-size:5rem;margin-bottom:14px;animation:pop 0.5s cubic-bezier(.4,0,.2,1);}
+  @keyframes pop{0%{transform:scale(0.3);opacity:0;}70%{transform:scale(1.15);}100%{transform:scale(1);opacity:1;}}
+  .results-title{font-family:'Libre Baskerville',serif;font-size:2.3rem;font-weight:700;margin-bottom:8px;letter-spacing:-0.5px;}
+  .results-champ{color:var(--accent);}
+  .results-score{font-size:1.05rem;color:var(--muted);margin-bottom:28px;line-height:1.8;}
+  .results-score strong{color:var(--text);font-size:1.4rem;}
+  .restart-btn{background:var(--accent);color:#fff;border:none;border-radius:var(--radius);font-family:'Inter',sans-serif;font-size:1rem;font-weight:500;padding:16px 40px;cursor:pointer;}
+  .restart-btn:active{background:#006e35;}
+
+  @keyframes shake{0%,100%{transform:translateX(0)}20%{transform:translateX(-6px)}40%{transform:translateX(6px)}60%{transform:translateX(-4px)}80%{transform:translateX(4px)}}
+  .shake{animation:shake 0.35s ease;}
+  @keyframes pulse-correct{0%{box-shadow:0 0 0 0 rgba(75,232,126,0.4)}70%{box-shadow:0 0 0 12px rgba(75,232,126,0)}100%{box-shadow:0 0 0 0 rgba(75,232,126,0)}}
+  .pulse-correct{animation:pulse-correct 0.5s ease;}
+</style>
+</head>
+<body>
+<div class="container">
+
+  <!-- SPLASH -->
+  <div id="splash-screen">
+    <div class="splash-logo"><span class="gr">Ita</span><span class="rd">liano</span></div>
+    <div class="splash-tagline">Intermediate Vocabulary Quiz</div>
+    <ul class="splash-features">
+      <li><span class="icon">🇮🇹</span> 300 intermediate Italian words</li>
+      <li><span class="icon">🔊</span> Spoken aloud in Italian</li>
+      <li><span class="icon">🎵</span> Sound feedback on every answer</li>
+      <li><span class="icon">🏆</span> Score 17+ out of 20 and earn Campione!</li>
+    </ul>
+    <button class="start-btn" id="start-btn">Iniziamo! &nbsp;→</button>
+    <div class="splash-note">Tap to unlock audio &amp; begin</div>
+  </div>
+
+  <!-- QUIZ -->
+  <div id="quiz-screen" style="display:none">
+    <header>
+      <div class="logo"><span class="gr">Ita</span><span class="rd">liano</span></div>
+      <div class="subtitle">Intermediate Vocabulary Quiz</div>
+    </header>
+    <div class="progress-row">
+      <div class="progress-bar-wrap"><div class="progress-bar-fill" id="progress-bar" style="width:0%"></div></div>
+      <div class="progress-label" id="progress-label">0 / 20</div>
+      <div class="score-badge">⭐ <span id="score-display">0</span></div>
+    </div>
+    <div class="word-card" id="word-card">
+      <div class="word-number" id="word-number">Word 1</div>
+      <button class="speak-btn" id="speak-btn">🔊</button>
+      <div class="italian-word" id="italian-word">—</div>
+      <div class="word-hint" id="word-hint">Italian → English</div>
+    </div>
+    <div class="choices" id="choices"></div>
+    <div class="feedback" id="feedback"></div>
+    <button class="next-btn" id="next-btn">Next word →</button>
+    <div class="dots-row" id="dots-row"></div>
+  </div>
+
+  <!-- RESULTS -->
+  <div id="results-screen">
+    <div class="results-emoji" id="results-emoji">🎉</div>
+    <div class="results-title" id="results-title">Campione!</div>
+    <div class="results-score" id="results-score"></div>
+    <button class="restart-btn" onclick="restartQuiz()">Gioca ancora</button>
+  </div>
+
+</div>
+<script>
+const wordBank = [
+
+  // ── VERBS – DAILY LIFE ──
+  {it:"svegliarsi",en:"to wake up",hint:"verb",decoys:["to fall asleep","to lie down","to dream"]},
+  {it:"vestirsi",en:"to get dressed",hint:"verb",decoys:["to undress","to wash up","to shave"]},
+  {it:"fare tardi",en:"to be late",hint:"verb",decoys:["to arrive early","to hurry","to wait"]},
+  {it:"sbrigarsi",en:"to hurry",hint:"verb",decoys:["to slow down","to wait","to relax"]},
+  {it:"riordinare",en:"to tidy up",hint:"verb",decoys:["to decorate","to rearrange","to repair"]},
+  {it:"fare il bucato",en:"to do the laundry",hint:"verb",decoys:["to iron","to dry","to fold"]},
+  {it:"stirare",en:"to iron",hint:"verb",decoys:["to wash","to fold","to hang"]},
+  {it:"cucinare",en:"to cook",hint:"verb",decoys:["to bake only","to fry only","to serve"]},
+  {it:"ordinare",en:"to order",hint:"verb",decoys:["to cancel","to pay","to deliver"]},
+  {it:"pagare",en:"to pay",hint:"verb",decoys:["to borrow","to owe","to earn"]},
+  {it:"spendere",en:"to spend (money)",hint:"verb",decoys:["to save","to earn","to waste"]},
+  {it:"risparmiare",en:"to save (money)",hint:"verb",decoys:["to spend","to borrow","to donate"]},
+  {it:"prendere in prestito",en:"to borrow",hint:"verb",decoys:["to lend","to steal","to give away"]},
+  {it:"prestare",en:"to lend",hint:"verb",decoys:["to borrow","to buy","to give"]},
+  {it:"cercare",en:"to look for / to search",hint:"verb",decoys:["to find","to hide","to lose"]},
+  {it:"trovare",en:"to find",hint:"verb",decoys:["to lose","to hide","to search"]},
+  {it:"perdere",en:"to lose",hint:"verb",decoys:["to find","to keep","to save"]},
+  {it:"dimenticare",en:"to forget",hint:"verb",decoys:["to remember","to remind","to record"]},
+  {it:"ricordare",en:"to remember / to recall",hint:"verb",decoys:["to forget","to imagine","to dream"]},
+  {it:"spiegare",en:"to explain",hint:"verb",decoys:["to describe","to translate","to repeat"]},
+  {it:"tradurre",en:"to translate",hint:"verb",decoys:["to read","to write","to speak"]},
+  {it:"consigliare",en:"to advise / to recommend",hint:"verb",decoys:["to warn","to order","to permit"]},
+  {it:"permettere",en:"to allow / to permit",hint:"verb",decoys:["to forbid","to force","to suggest"]},
+  {it:"vietare",en:"to forbid / to prohibit",hint:"verb",decoys:["to allow","to suggest","to require"]},
+  {it:"rifiutare",en:"to refuse / to decline",hint:"verb",decoys:["to accept","to agree","to offer"]},
+  {it:"essere d'accordo",en:"to agree",hint:"verb",decoys:["to refuse","to deny","to argue"]},
+  {it:"litigare",en:"to argue / to quarrel",hint:"verb",decoys:["to agree","to discuss","to complain"]},
+  {it:"lamentarsi",en:"to complain",hint:"verb",decoys:["to praise","to explain","to ask"]},
+  {it:"lodare",en:"to praise",hint:"verb",decoys:["to criticize","to ignore","to blame"]},
+  {it:"criticare",en:"to criticize",hint:"verb",decoys:["to praise","to accept","to defend"]},
+  {it:"discutere",en:"to discuss",hint:"verb",decoys:["to argue","to decide","to ignore"]},
+  {it:"ammettere",en:"to admit",hint:"verb",decoys:["to deny","to hide","to forget"]},
+  {it:"raggiungere",en:"to reach / to achieve",hint:"verb",decoys:["to attempt","to fail","to ignore"]},
+  {it:"evitare",en:"to avoid",hint:"verb",decoys:["to seek","to face","to accept"]},
+  {it:"avvertire",en:"to warn / to notify",hint:"verb",decoys:["to prevent","to ask","to reassure"]},
+
+  // ── VERBS – EMOTIONS & MENTAL STATES ──
+  {it:"rallegrarsi",en:"to rejoice / to be glad",hint:"verb",decoys:["to grieve","to worry","to complain"]},
+  {it:"essere triste",en:"to feel sad",hint:"verb",decoys:["to rejoice","to worry","to get angry"]},
+  {it:"arrabbiarsi",en:"to get angry",hint:"verb",decoys:["to calm down","to feel sad","to get scared"]},
+  {it:"avere paura",en:"to be afraid / to fear",hint:"verb",decoys:["to be brave","to ignore","to dare"]},
+  {it:"vergognarsi",en:"to feel ashamed",hint:"verb",decoys:["to feel confident","to feel proud","to feel relieved"]},
+  {it:"essere orgoglioso",en:"to be proud",hint:"verb",decoys:["to be ashamed","to be jealous","to be modest"]},
+  {it:"invidiare",en:"to envy",hint:"verb",decoys:["to admire","to respect","to support"]},
+  {it:"offendersi",en:"to take offense / to feel hurt",hint:"verb",decoys:["to forgive","to ignore","to understand"]},
+  {it:"perdonare",en:"to forgive",hint:"verb",decoys:["to punish","to blame","to accuse"]},
+  {it:"rimpiangere",en:"to regret",hint:"verb",decoys:["to celebrate","to forget","to accept"]},
+  {it:"preoccuparsi",en:"to worry",hint:"verb",decoys:["to relax","to calm down","to sleep well"]},
+  {it:"calmarsi",en:"to calm down",hint:"verb",decoys:["to get anxious","to panic","to worry"]},
+  {it:"sperare",en:"to hope",hint:"verb",decoys:["to despair","to expect","to wish"]},
+  {it:"fidarsi",en:"to trust",hint:"verb",decoys:["to distrust","to suspect","to fear"]},
+  {it:"sospettare",en:"to suspect",hint:"verb",decoys:["to trust","to confirm","to know"]},
+  {it:"ammirare",en:"to admire",hint:"verb",decoys:["to criticize","to ignore","to tolerate"]},
+  {it:"annoiarsi",en:"to be bored",hint:"verb",decoys:["to enjoy","to laugh","to entertain"]},
+  {it:"irritarsi",en:"to get irritated",hint:"verb",decoys:["to calm down","to relax","to enjoy"]},
+  {it:"sorprendersi",en:"to be surprised",hint:"verb",decoys:["to be expected","to be bored","to be indifferent"]},
+  {it:"rimanere deluso",en:"to be disappointed",hint:"verb",decoys:["to be pleased","to be excited","to be relieved"]},
+  {it:"sognare",en:"to dream",hint:"verb",decoys:["to sleep","to think","to plan"]},
+  {it:"innamorarsi",en:"to fall in love",hint:"verb",decoys:["to fall out","to get married","to flirt"]},
+  {it:"sentire la mancanza",en:"to miss someone",hint:"verb",decoys:["to forget","to avoid","to leave"]},
+  {it:"sentirsi a proprio agio",en:"to feel at ease",hint:"verb",decoys:["to struggle","to suffer","to complain"]},
+  {it:"osare",en:"to dare",hint:"verb",decoys:["to fear","to hesitate","to refuse"]},
+
+  // ── NOUNS – PEOPLE & SOCIETY ──
+  {it:"il vicino",en:"the neighbor",hint:"noun",decoys:["the stranger","the relative","the landlord"]},
+  {it:"il testimone",en:"the witness",hint:"noun",decoys:["the victim","the suspect","the judge"]},
+  {it:"il funzionario",en:"the civil servant / the official",hint:"noun",decoys:["the volunteer","the contractor","the manager"]},
+  {it:"il giornalista",en:"the journalist",hint:"noun",decoys:["the editor","the broadcaster","the professor"]},
+  {it:"il pompiere",en:"the firefighter",hint:"noun",decoys:["the police officer","the soldier","the paramedic"]},
+  {it:"il pensionato",en:"the retiree / the pensioner",hint:"noun",decoys:["the student","the teenager","the employee"]},
+  {it:"la coppia",en:"the couple",hint:"noun",decoys:["the friendship","the group","the team"]},
+  {it:"l'orfano",en:"the orphan",hint:"noun",decoys:["the refugee","the widow","the volunteer"]},
+  {it:"lo straniero",en:"the foreigner",hint:"noun",decoys:["the citizen","the native","the resident"]},
+  {it:"la folla",en:"the crowd",hint:"noun",decoys:["the army","the audience","the committee"]},
+  {it:"il sindacato",en:"the labor union",hint:"noun",decoys:["the company","the association","the government"]},
+  {it:"il difensore",en:"the defender / the advocate",hint:"noun",decoys:["the attacker","the judge","the observer"]},
+  {it:"l'erede",en:"the heir",hint:"noun",decoys:["the owner","the donor","the creditor"]},
+  {it:"l'ospite",en:"the guest / the host",hint:"noun",decoys:["the tenant","the visitor","the neighbor"]},
+  {it:"l'infermiere",en:"the nurse",hint:"noun",decoys:["the doctor","the pharmacist","the surgeon"]},
+  {it:"il sondaggio",en:"the survey / the poll",hint:"noun",decoys:["the report","the census","the interview"]},
+  {it:"il discorso",en:"the speech",hint:"noun",decoys:["the argument","the discussion","the lecture"]},
+  {it:"la manifestazione",en:"the demonstration / the protest",hint:"noun",decoys:["the celebration","the election","the ceremony"]},
+  {it:"l'accordo",en:"the agreement",hint:"noun",decoys:["the argument","the decision","the contract"]},
+  {it:"il ricordo",en:"the memory / the souvenir",hint:"noun",decoys:["the dream","the regret","the reminder"]},
+  {it:"il consiglio",en:"the advice / the council",hint:"noun",decoys:["the order","the decision","the warning"]},
+  {it:"l'usanza",en:"the custom / the tradition",hint:"noun",decoys:["the costume","the culture","the habit"]},
+  {it:"il soprannome",en:"the nickname",hint:"noun",decoys:["the surname","the title","the alias"]},
+  {it:"la bugia",en:"the lie",hint:"noun",decoys:["the truth","the secret","the rumor"]},
+  {it:"la voce",en:"the rumor / the voice",hint:"noun",decoys:["the noise","the news","the gossip"]},
+  {it:"la generazione",en:"the generation",hint:"noun",decoys:["the century","the decade","the era"]},
+  {it:"il cittadino",en:"the citizen",hint:"noun",decoys:["the soldier","the resident","the foreigner"]},
+  {it:"il profugo",en:"the refugee",hint:"noun",decoys:["the immigrant","the tourist","the traveler"]},
+
+  // ── NOUNS – HOME & EVERYDAY OBJECTS ──
+  {it:"il cassetto",en:"the drawer",hint:"noun",decoys:["the cabinet","the shelf","the closet"]},
+  {it:"il cuscino",en:"the pillow / the cushion",hint:"noun",decoys:["the blanket","the mattress","the sheet"]},
+  {it:"il rubinetto",en:"the faucet / the tap",hint:"noun",decoys:["the drain","the pipe","the valve"]},
+  {it:"il frigorifero",en:"the refrigerator",hint:"noun",decoys:["the freezer","the oven","the microwave"]},
+  {it:"la presa elettrica",en:"the electrical outlet",hint:"noun",decoys:["the switch","the plug","the cord"]},
+  {it:"la scala",en:"the staircase / the ladder",hint:"noun",decoys:["the elevator","the ramp","the corridor"]},
+  {it:"la cantina",en:"the cellar / the basement",hint:"noun",decoys:["the attic","the garage","the hallway"]},
+  {it:"il soffitto",en:"the ceiling",hint:"noun",decoys:["the floor","the wall","the foundation"]},
+  {it:"il tappeto",en:"the carpet / the rug",hint:"noun",decoys:["the curtain","the tile","the mat"]},
+  {it:"lo specchio",en:"the mirror",hint:"noun",decoys:["the window","the painting","the frame"]},
+  {it:"la chiave",en:"the key",hint:"noun",decoys:["the lock","the door","the handle"]},
+  {it:"il campanello",en:"the doorbell",hint:"noun",decoys:["the lock","the knocker","the intercom"]},
+  {it:"la spazzatura",en:"the trash / the garbage",hint:"noun",decoys:["the dirt","the waste","the recycling"]},
+  {it:"la gruccia",en:"the clothes hanger",hint:"noun",decoys:["the shelf","the hook","the rack"]},
+  {it:"il materasso",en:"the mattress",hint:"noun",decoys:["the pillow","the blanket","the bed frame"]},
+  {it:"la vasca da bagno",en:"the bathtub",hint:"noun",decoys:["the shower","the sink","the toilet"]},
+  {it:"l'interruttore",en:"the light switch",hint:"noun",decoys:["the plug","the fuse","the circuit breaker"]},
+  {it:"il vaso da fiori",en:"the flowerpot",hint:"noun",decoys:["the vase","the tray","the basket"]},
+  {it:"l'angolo",en:"the corner",hint:"noun",decoys:["the edge","the angle","the side"]},
+  {it:"la serratura",en:"the lock",hint:"noun",decoys:["the key","the handle","the bolt"]},
+  {it:"il secchio",en:"the bucket",hint:"noun",decoys:["the barrel","the jar","the bin"]},
+  {it:"l'asciugamano",en:"the towel",hint:"noun",decoys:["the cloth","the napkin","the sheet"]},
+  {it:"la tenda",en:"the curtain",hint:"noun",decoys:["the blind","the shade","the screen"]},
+  {it:"la casseruola",en:"the saucepan / the pot",hint:"noun",decoys:["the pan","the wok","the bowl"]},
+  {it:"la padella",en:"the frying pan",hint:"noun",decoys:["the pot","the grill","the wok"]},
+
+  // ── NOUNS – NATURE & ENVIRONMENT ──
+  {it:"il fulmine",en:"the lightning",hint:"noun",decoys:["the thunder","the storm","the hail"]},
+  {it:"la siccità",en:"the drought",hint:"noun",decoys:["the flood","the frost","the storm"]},
+  {it:"il terremoto",en:"the earthquake",hint:"noun",decoys:["the volcano","the tsunami","the landslide"]},
+  {it:"la riva",en:"the shore / the riverbank",hint:"noun",decoys:["the cliff","the beach","the valley"]},
+  {it:"il muschio",en:"the moss",hint:"noun",decoys:["the lichen","the fern","the weed"]},
+  {it:"la foglia",en:"the leaf",hint:"noun",decoys:["the branch","the root","the bark"]},
+  {it:"la pozzanghera",en:"the puddle",hint:"noun",decoys:["the pond","the lake","the stream"]},
+  {it:"il cespuglio",en:"the bush / the shrub",hint:"noun",decoys:["the tree","the flower","the cactus"]},
+  {it:"la grotta",en:"the cave",hint:"noun",decoys:["the tunnel","the mine","the cliff"]},
+  {it:"il prato",en:"the meadow",hint:"noun",decoys:["the forest","the hill","the valley"]},
+  {it:"la nebbia",en:"the fog",hint:"noun",decoys:["the cloud","the mist","the haze"]},
+  {it:"la grandine",en:"the hail",hint:"noun",decoys:["the sleet","the frost","the snow"]},
+  {it:"la tempesta",en:"the storm",hint:"noun",decoys:["the drizzle","the breeze","the hurricane"]},
+  {it:"l'alba",en:"the sunrise / the dawn",hint:"noun",decoys:["the sunset","the dusk","the noon"]},
+  {it:"il tramonto",en:"the sunset",hint:"noun",decoys:["the sunrise","the dawn","the twilight"]},
+  {it:"la cascata",en:"the waterfall",hint:"noun",decoys:["the river","the stream","the rapids"]},
+  {it:"la palude",en:"the swamp / the marsh",hint:"noun",decoys:["the lake","the pond","the lagoon"]},
+  {it:"la pianura",en:"the plain / the flatland",hint:"noun",decoys:["the mountain","the valley","the plateau"]},
+  {it:"la scogliera",en:"the cliff",hint:"noun",decoys:["the rock","the dune","the hill"]},
+  {it:"la marea",en:"the tide",hint:"noun",decoys:["the current","the wave","the surge"]},
+  {it:"il vulcano",en:"the volcano",hint:"noun",decoys:["the mountain","the geyser","the crater"]},
+  {it:"il burrone",en:"the ravine / the gorge",hint:"noun",decoys:["the valley","the trench","the ditch"]},
+
+  // ── NOUNS – WORK & MONEY ──
+  {it:"lo stipendio",en:"the salary / the wage",hint:"noun",decoys:["the bonus","the tip","the pension"]},
+  {it:"la scadenza",en:"the deadline",hint:"noun",decoys:["the plan","the period","the limit"]},
+  {it:"la fattura",en:"the invoice / the bill",hint:"noun",decoys:["the receipt","the contract","the estimate"]},
+  {it:"il socio",en:"the partner / the associate",hint:"noun",decoys:["the employee","the client","the shareholder"]},
+  {it:"la riunione",en:"the meeting",hint:"noun",decoys:["the seminar","the lecture","the workshop"]},
+  {it:"il rapporto",en:"the report / the relationship",hint:"noun",decoys:["the form","the notice","the summary"]},
+  {it:"la sede centrale",en:"the headquarters",hint:"noun",decoys:["the branch","the office","the factory"]},
+  {it:"la promozione",en:"the promotion",hint:"noun",decoys:["the bonus","the transfer","the demotion"]},
+  {it:"il licenziamento",en:"the dismissal / the layoff",hint:"noun",decoys:["the resignation","the retirement","the suspension"]},
+  {it:"il debito",en:"the debt",hint:"noun",decoys:["the loan","the tax","the fine"]},
+  {it:"il prestito",en:"the loan",hint:"noun",decoys:["the debt","the savings","the investment"]},
+  {it:"la tassa",en:"the tax",hint:"noun",decoys:["the fine","the fee","the duty"]},
+  {it:"il profitto",en:"the profit",hint:"noun",decoys:["the loss","the expense","the revenue"]},
+  {it:"la perdita",en:"the loss",hint:"noun",decoys:["the profit","the gain","the expense"]},
+  {it:"il contratto",en:"the contract",hint:"noun",decoys:["the policy","the permit","the clause"]},
+  {it:"lo sciopero",en:"the strike",hint:"noun",decoys:["the protest","the boycott","the walkout"]},
+  {it:"il posto",en:"the position / the place / the job",hint:"noun",decoys:["the career","the task","the role"]},
+  {it:"la filiale",en:"the branch (of a company)",hint:"noun",decoys:["the headquarters","the warehouse","the office"]},
+  {it:"la giornata lavorativa",en:"the workday",hint:"noun",decoys:["the schedule","the break","the overtime"]},
+  {it:"il magazzino",en:"the warehouse",hint:"noun",decoys:["the store","the factory","the depot"]},
+  {it:"il fornitore",en:"the supplier",hint:"noun",decoys:["the buyer","the distributor","the retailer"]},
+  {it:"il bilancio",en:"the budget / the balance sheet",hint:"noun",decoys:["the estimate","the forecast","the plan"]},
+
+  // ── ADJECTIVES ──
+  {it:"orgoglioso",en:"proud",hint:"adjective",decoys:["ashamed","jealous","stubborn"]},
+  {it:"geloso",en:"jealous",hint:"adjective",decoys:["proud","shy","angry"]},
+  {it:"testardo",en:"stubborn",hint:"adjective",decoys:["flexible","patient","calm"]},
+  {it:"ingenuo",en:"naive",hint:"adjective",decoys:["cunning","wise","suspicious"]},
+  {it:"furbo",en:"cunning / crafty",hint:"adjective",decoys:["naive","honest","careless"]},
+  {it:"gentile",en:"kind / gentle",hint:"adjective",decoys:["mean","cold","distant"]},
+  {it:"avaro",en:"stingy / miserly",hint:"adjective",decoys:["generous","thrifty","wealthy"]},
+  {it:"generoso",en:"generous",hint:"adjective",decoys:["stingy","selfish","greedy"]},
+  {it:"pigro",en:"lazy",hint:"adjective",decoys:["hardworking","active","energetic"]},
+  {it:"laborioso",en:"hardworking / diligent",hint:"adjective",decoys:["lazy","inactive","slow"]},
+  {it:"coraggioso",en:"brave / courageous",hint:"adjective",decoys:["cowardly","reckless","timid"]},
+  {it:"vigliacco",en:"cowardly",hint:"adjective",decoys:["brave","cautious","bold"]},
+  {it:"onesto",en:"honest",hint:"adjective",decoys:["dishonest","deceptive","corrupt"]},
+  {it:"bugiardo",en:"lying / deceitful",hint:"adjective",decoys:["honest","truthful","sincere"]},
+  {it:"curioso",en:"curious",hint:"adjective",decoys:["indifferent","bored","distracted"]},
+  {it:"sensato",en:"sensible / reasonable",hint:"adjective",decoys:["foolish","reckless","impulsive"]},
+  {it:"trascurato",en:"careless / neglectful",hint:"adjective",decoys:["careful","thorough","attentive"]},
+  {it:"preciso",en:"precise / careful / neat",hint:"adjective",decoys:["messy","careless","inattentive"]},
+  {it:"esausto",en:"exhausted",hint:"adjective",decoys:["energized","rested","refreshed"]},
+  {it:"spaventato",en:"scared / frightened",hint:"adjective",decoys:["brave","calm","excited"]},
+  {it:"sollevato",en:"relieved",hint:"adjective",decoys:["worried","tense","stressed"]},
+  {it:"deluso",en:"disappointed",hint:"adjective",decoys:["satisfied","pleased","excited"]},
+  {it:"soddisfatto",en:"satisfied / content",hint:"adjective",decoys:["disappointed","bored","dissatisfied"]},
+  {it:"impaziente",en:"impatient",hint:"adjective",decoys:["patient","calm","relaxed"]},
+  {it:"disponibile",en:"available / willing",hint:"adjective",decoys:["busy","unavailable","occupied"]},
+  {it:"adatto",en:"suitable / appropriate",hint:"adjective",decoys:["inadequate","excessive","unsuitable"]},
+  {it:"inaspettato",en:"unexpected",hint:"adjective",decoys:["expected","planned","predictable"]},
+  {it:"capace",en:"capable / able",hint:"adjective",decoys:["incapable","clumsy","helpless"]},
+  {it:"potente",en:"powerful",hint:"adjective",decoys:["weak","fragile","helpless"]},
+  {it:"quotidiano",en:"everyday / daily",hint:"adjective",decoys:["occasional","rare","special"]},
+  {it:"educato",en:"polite / well-mannered",hint:"adjective",decoys:["rude","arrogant","aggressive"]},
+  {it:"maleducato",en:"rude / ill-mannered",hint:"adjective",decoys:["polite","gentle","kind"]},
+  {it:"modesto",en:"modest / humble",hint:"adjective",decoys:["arrogant","proud","showy"]},
+
+  // ── ADVERBS, CONNECTORS & PHRASES ──
+  {it:"nonostante",en:"despite / in spite of",hint:"preposition",decoys:["because of","thanks to","due to"]},
+  {it:"inoltre",en:"furthermore / in addition",hint:"adverb",decoys:["however","instead","otherwise"]},
+  {it:"d'altra parte",en:"on the other hand",hint:"phrase",decoys:["in conclusion","in summary","for example"]},
+  {it:"per quanto riguarda",en:"as for / regarding",hint:"phrase",decoys:["in order to","instead of","according to"]},
+  {it:"quindi",en:"therefore / so",hint:"adverb",decoys:["however","meanwhile","nevertheless"]},
+  {it:"spesso",en:"often",hint:"adverb",decoys:["rarely","always","never"]},
+  {it:"di tanto in tanto",en:"from time to time",hint:"phrase",decoys:["all the time","never again","right away"]},
+  {it:"subito",en:"right away / immediately",hint:"adverb",decoys:["later on","eventually","gradually"]},
+  {it:"a volte",en:"sometimes",hint:"phrase",decoys:["always","never","often"]},
+  {it:"all'improvviso",en:"suddenly",hint:"phrase",decoys:["slowly","gradually","eventually"]},
+  {it:"in realtà",en:"in reality / actually",hint:"phrase",decoys:["in theory","in general","in practice"]},
+  {it:"alla fine",en:"in the end / finally",hint:"phrase",decoys:["right away","at first","in the beginning"]},
+  {it:"a condizione che",en:"provided that",hint:"phrase",decoys:["in case","even though","as soon as"]},
+  {it:"dato che",en:"since / given that",hint:"conjunction",decoys:["unless","although","even if"]},
+  {it:"in questo modo",en:"in this way / thus",hint:"phrase",decoys:["on the contrary","instead","otherwise"]},
+  {it:"benché",en:"although / even though",hint:"conjunction",decoys:["because","since","unless"]},
+  {it:"appena",en:"barely / as soon as",hint:"adverb",decoys:["already","still","yet"]},
+  {it:"ancora",en:"still / yet / again",hint:"adverb",decoys:["already","no longer","soon"]},
+  {it:"non appena",en:"as soon as",hint:"phrase",decoys:["as long as","in case","unless"]},
+  {it:"nel frattempo",en:"meanwhile / in the meantime",hint:"phrase",decoys:["therefore","afterwards","instead"]},
+  {it:"tuttavia",en:"nevertheless / however",hint:"adverb",decoys:["therefore","additionally","similarly"]},
+  {it:"eppure",en:"and yet / but still",hint:"adverb",decoys:["therefore","additionally","finally"]},
+
+  // ── IDIOMS & SET PHRASES ──
+  {it:"averne abbastanza",en:"to be fed up",hint:"phrase",decoys:["to be satisfied","to be fond of","to be proud of"]},
+  {it:"avere voglia di",en:"to feel like / to want to",hint:"phrase",decoys:["to be afraid of","to be tired of","to be capable of"]},
+  {it:"portare a termine",en:"to carry out / to accomplish",hint:"phrase",decoys:["to give up","to put aside","to abandon"]},
+  {it:"fare attenzione",en:"to pay attention / to be careful",hint:"phrase",decoys:["to make a note","to ignore","to pretend"]},
+  {it:"tener conto di",en:"to take into account",hint:"phrase",decoys:["to count on","to forget about","to disagree with"]},
+  {it:"fare bella figura",en:"to make a good impression",hint:"phrase",decoys:["to fail to impress","to embarrass oneself","to be ignored"]},
+  {it:"essere al corrente",en:"to be up to date / to be aware",hint:"phrase",decoys:["to fall behind","to be confused","to be uninformed"]},
+  {it:"all'improvviso",en:"all of a sudden",hint:"phrase",decoys:["gradually","repeatedly","eventually"]},
+  {it:"forse",en:"maybe / perhaps",hint:"adverb",decoys:["definitely","certainly","absolutely"]},
+  {it:"avere in mente",en:"to have in mind",hint:"phrase",decoys:["to forget","to lose track","to change one's mind"]},
+  {it:"farsi illusioni",en:"to have illusions / to kid oneself",hint:"phrase",decoys:["to face reality","to feel hopeless","to make plans"]},
+  {it:"non avere importanza",en:"to not matter",hint:"phrase",decoys:["to matter a lot","to be important","to be crucial"]},
+  {it:"apposta",en:"on purpose / deliberately",hint:"adverb",decoys:["by accident","in a hurry","without thinking"]},
+  {it:"per niente",en:"not at all",hint:"phrase",decoys:["completely","partly","to some extent"]},
+  {it:"d'accordo",en:"agreed / okay",hint:"phrase",decoys:["in doubt","in disagreement","in question"]},
+  {it:"in tempo",en:"in time / on time",hint:"phrase",decoys:["late","too early","ahead of schedule"]},
+  {it:"fuori posto",en:"out of place / inappropriate",hint:"phrase",decoys:["fitting in","perfectly suited","at the right time"]},
+  {it:"in fondo",en:"deep down / at the bottom",hint:"phrase",decoys:["on the surface","in the end","at first"]},
+  {it:"avere ragione",en:"to be right",hint:"phrase",decoys:["to be wrong","to have a reason","to make sense"]},
+  {it:"perdere la testa",en:"to lose one's head / to panic",hint:"phrase",decoys:["to stay calm","to think clearly","to take charge"]},
+  {it:"prendersi la responsabilità",en:"to take responsibility",hint:"phrase",decoys:["to avoid blame","to share credit","to give orders"]},
+  {it:"da allora",en:"since then / ever since",hint:"phrase",decoys:["before that","until now","right away"]},
+  {it:"a differenza di",en:"unlike / in contrast to",hint:"phrase",decoys:["similar to","the same as","along with"]},
+  {it:"almeno",en:"at least",hint:"phrase",decoys:["at most","no more than","as much as"]},
+
+  // ── NOUNS – ABSTRACT & GENERAL ──
+  {it:"l'abitudine",en:"the habit",hint:"noun",decoys:["the custom","the tradition","the rule"]},
+  {it:"la competenza",en:"the skill / the competence",hint:"noun",decoys:["the talent","the knowledge","the ability"]},
+  {it:"l'esperienza",en:"the experience",hint:"noun",decoys:["the experiment","the example","the expertise"]},
+  {it:"la conoscenza",en:"the knowledge",hint:"noun",decoys:["the skill","the wisdom","the information"]},
+  {it:"l'opinione",en:"the opinion",hint:"noun",decoys:["the fact","the belief","the theory"]},
+  {it:"l'opportunità",en:"the opportunity",hint:"noun",decoys:["the ability","the permission","the advantage"]},
+  {it:"la decisione",en:"the decision",hint:"noun",decoys:["the problem","the question","the plan"]},
+  {it:"il motivo",en:"the reason / the motive",hint:"noun",decoys:["the result","the effect","the purpose"]},
+  {it:"la conseguenza",en:"the consequence",hint:"noun",decoys:["the reason","the cause","the problem"]},
+  {it:"il vantaggio",en:"the advantage",hint:"noun",decoys:["the disadvantage","the obstacle","the risk"]},
+  {it:"lo svantaggio",en:"the disadvantage / the drawback",hint:"noun",decoys:["the advantage","the benefit","the strength"]},
+  {it:"l'obiettivo",en:"the goal / the objective",hint:"noun",decoys:["the plan","the dream","the wish"]},
+  {it:"il compito",en:"the task / the homework",hint:"noun",decoys:["the goal","the result","the challenge"]},
+  {it:"lo sforzo",en:"the effort",hint:"noun",decoys:["the result","the progress","the attempt"]},
+  {it:"il successo",en:"the success",hint:"noun",decoys:["the failure","the luck","the progress"]},
+  {it:"l'errore",en:"the mistake / the error",hint:"noun",decoys:["the accident","the problem","the failure"]},
+  {it:"il cambiamento",en:"the change",hint:"noun",decoys:["the improvement","the reform","the shift"]},
+  {it:"lo sviluppo",en:"the development",hint:"noun",decoys:["the growth","the progress","the change"]},
+  {it:"l'influenza",en:"the influence",hint:"noun",decoys:["the effect","the power","the control"]},
+  {it:"il legame",en:"the bond / the link / the connection",hint:"noun",decoys:["the relationship","the network","the contact"]},
+  {it:"il rapporto",en:"the relationship / the report",hint:"noun",decoys:["the connection","the behavior","the feeling"]},
+  {it:"la domanda",en:"the question / the demand",hint:"noun",decoys:["the answer","the problem","the topic"]},
+  {it:"la risposta",en:"the answer / the response",hint:"noun",decoys:["the question","the solution","the reply"]},
+  {it:"il diritto",en:"the right / the law",hint:"noun",decoys:["the duty","the permission","the privilege"]},
+  {it:"il dovere",en:"the duty / the obligation",hint:"noun",decoys:["the right","the privilege","the freedom"]},
+  {it:"la regola",en:"the rule",hint:"noun",decoys:["the law","the norm","the regulation"]},
+  {it:"la legge",en:"the law",hint:"noun",decoys:["the rule","the regulation","the order"]},
+  {it:"la sfida",en:"the challenge",hint:"noun",decoys:["the problem","the obstacle","the difficulty"]},
+];
+
+let audioCtx=null;
+function unlockAudio(){
+  if(audioCtx)return;
+  audioCtx=new(window.AudioContext||window.webkitAudioContext)();
+  const buf=audioCtx.createBuffer(1,1,22050);
+  const src=audioCtx.createBufferSource();
+  src.buffer=buf;src.connect(audioCtx.destination);src.start(0);
+}
+function playTone(type){
+  if(!audioCtx)return;
+  if(audioCtx.state==='suspended')audioCtx.resume();
+  const ctx=audioCtx,now=ctx.currentTime;
+  if(type==='correct'){
+    [523.25,659.25,783.99].forEach((freq,i)=>{
+      const o=ctx.createOscillator(),g=ctx.createGain();
+      o.connect(g);g.connect(ctx.destination);
+      o.type='sine';
+      o.frequency.setValueAtTime(freq,now+i*0.12);
+      g.gain.setValueAtTime(0.28,now+i*0.12);
+      g.gain.exponentialRampToValueAtTime(0.001,now+i*0.12+0.35);
+      o.start(now+i*0.12);o.stop(now+i*0.12+0.4);
+    });
+  }else{
+    const o=ctx.createOscillator(),g=ctx.createGain();
+    o.connect(g);g.connect(ctx.destination);
+    o.type='sawtooth';
+    o.frequency.setValueAtTime(300,now);
+    o.frequency.exponentialRampToValueAtTime(160,now+0.4);
+    g.gain.setValueAtTime(0.18,now);
+    g.gain.exponentialRampToValueAtTime(0.001,now+0.5);
+    o.start(now);o.stop(now+0.55);
+  }
+}
+let voices=[];
+function loadVoices(){voices=window.speechSynthesis?speechSynthesis.getVoices():[];}
+function speakItalian(text){
+  if(!window.speechSynthesis)return;
+  speechSynthesis.cancel();
+  const u=new SpeechSynthesisUtterance(text);
+  u.lang='it-IT';u.rate=0.88;u.pitch=1.0;
+  if(!voices.length)loadVoices();
+  const v=voices.find(v=>v.lang==='it-IT'||v.lang==='it')
+         ||voices.find(v=>v.lang.startsWith('it'));
+  if(v)u.voice=v;
+  speechSynthesis.speak(u);
+}
+let questions=[],current=0,score=0,answered=false;
+function shuffle(a){
+  a=[...a];
+  for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];}
+  return a;
+}
+document.getElementById('start-btn').addEventListener('click',()=>{
+  unlockAudio();loadVoices();
+  document.getElementById('splash-screen').style.display='none';
+  document.getElementById('quiz-screen').style.display='block';
+  initQuiz();
+});
+function initQuiz(){
+  questions=shuffle(wordBank).slice(0,20);
+  current=0;score=0;answered=false;
+  buildDots();loadQuestion();
+}
+function restartQuiz(){
+  document.getElementById('results-screen').style.display='none';
+  document.getElementById('quiz-screen').style.display='block';
+  initQuiz();
+}
+function buildDots(){
+  const row=document.getElementById('dots-row');row.innerHTML='';
+  for(let i=0;i<20;i++){const d=document.createElement('div');d.className='dot';d.id='dot-'+i;row.appendChild(d);}
+}
+function loadQuestion(){
+  answered=false;
+  const q=questions[current];
+  document.getElementById('progress-bar').style.width=(current/20*100)+'%';
+  document.getElementById('progress-label').textContent=current+' / 20';
+  document.getElementById('score-display').textContent=score;
+  document.getElementById('word-number').textContent='Word '+(current+1);
+  document.getElementById('italian-word').textContent=q.it;
+  document.getElementById('word-hint').textContent=q.hint;
+  document.getElementById('word-card').className='word-card';
+  const fb=document.getElementById('feedback');fb.textContent='';fb.className='feedback';
+  const choices=shuffle([q.en,...q.decoys.slice(0,3)]);
+  const el=document.getElementById('choices');el.innerHTML='';
+  choices.forEach(c=>{
+    const b=document.createElement('button');
+    b.className='choice-btn';b.textContent=c;
+    b.addEventListener('click',()=>handleAnswer(c,q.en,b));
+    el.appendChild(b);
+  });
+  document.getElementById('next-btn').className='next-btn';
+  setTimeout(()=>speakItalian(q.it),350);
+}
+function handleAnswer(chosen,correct,btn){
+  if(answered)return;answered=true;
+  const ok=chosen===correct;
+  const card=document.getElementById('word-card');
+  const fb=document.getElementById('feedback');
+  const nb=document.getElementById('next-btn');
+  document.querySelectorAll('.choice-btn').forEach(b=>{
+    b.disabled=true;
+    if(b.textContent===correct)b.classList.add('correct');
+  });
+  if(ok){
+    score++;btn.classList.add('correct');
+    card.classList.add('correct','pulse-correct');
+    fb.textContent='✓ Correct! Bravo!';fb.className='feedback show-correct';
+  }else{
+    btn.classList.add('wrong');card.classList.add('wrong','shake');
+    fb.textContent='✗ Incorrect. The answer is: "'+correct+'"';fb.className='feedback show-wrong';
+    setTimeout(()=>card.classList.remove('shake'),400);
+  }
+  playTone(ok?'correct':'wrong');
+  const dot=document.getElementById('dot-'+current);
+  if(dot)dot.className='dot '+(ok?'correct':'wrong');
+  document.getElementById('score-display').textContent=score;
+  nb.className='next-btn visible';
+  nb.textContent=current===19?'See Results →':'Next word →';
+}
+document.getElementById('next-btn').addEventListener('click',()=>{
+  current++;current>=20?showResults():loadQuestion();
+});
+document.getElementById('speak-btn').addEventListener('click',()=>{
+  const w=document.getElementById('italian-word').textContent;
+  if(w&&w!=='—')speakItalian(w);
+});
+function showResults(){
+  document.getElementById('quiz-screen').style.display='none';
+  document.getElementById('results-screen').style.display='block';
+  const champ=score>=17;
+  document.getElementById('results-emoji').textContent=champ?'🏆':score>=12?'💪':'📚';
+  const t=document.getElementById('results-title');
+  t.textContent=champ?'Campione!':score>=12?'Ottimo lavoro!':'Continua a studiare!';
+  t.className='results-title'+(champ?' results-champ':'');
+  const msg=champ?"Outstanding! You're a true Italian champion 🌟":score>=12?"Solid work — keep building on this!":"Keep studying — you'll get there!";
+  document.getElementById('results-score').innerHTML='You got <strong>'+score+' / 20</strong> correct.<br><small style="color:var(--muted)">'+msg+'</small>';
+}
+if(window.speechSynthesis){speechSynthesis.onvoiceschanged=loadVoices;loadVoices();}
+</script>
+</body>
+</html>
