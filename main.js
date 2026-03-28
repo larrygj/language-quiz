@@ -1,9 +1,15 @@
-const { app, BrowserWindow, ipcMain, Menu, shell } = require('electron');
+const { app, BrowserWindow, ipcMain, Menu } = require('electron');
 const path = require('path');
 
-// Keep a global reference to prevent garbage collection
 let mainWindow;
 let quizWindows = [];
+
+function getResourcePath(...segments) {
+  if (app.isPackaged) {
+    return path.join(process.resourcesPath, 'app', ...segments);
+  }
+  return path.join(__dirname, ...segments);
+}
 
 function createLauncher() {
   mainWindow = new BrowserWindow({
@@ -21,7 +27,7 @@ function createLauncher() {
     title: 'Language Quiz'
   });
 
-  mainWindow.loadFile('launcher.html');
+  mainWindow.loadFile(getResourcePath('launcher.html'));
 
   mainWindow.once('ready-to-show', () => {
     mainWindow.show();
@@ -29,14 +35,13 @@ function createLauncher() {
 
   mainWindow.on('closed', () => {
     mainWindow = null;
-    // Close all quiz windows when launcher closes
     quizWindows.forEach(w => { if (!w.isDestroyed()) w.close(); });
     quizWindows = [];
   });
 }
 
 function openQuiz(filename, title) {
-  const quizPath = path.join(__dirname, 'quizzes', filename);
+  const quizPath = getResourcePath('quizzes', filename);
 
   const win = new BrowserWindow({
     width: 720,
@@ -49,8 +54,7 @@ function openQuiz(filename, title) {
     webPreferences: {
       nodeIntegration: false,
       contextIsolation: true,
-      // Allow speech synthesis
-      webSecurity: true,
+      webSecurity: false,
     },
     show: false,
   });
@@ -68,12 +72,10 @@ function openQuiz(filename, title) {
   quizWindows.push(win);
 }
 
-// IPC: launcher sends open-quiz event
 ipcMain.on('open-quiz', (event, { filename, title }) => {
   openQuiz(filename, title);
 });
 
-// Build app menu
 function buildMenu() {
   const template = [
     ...(process.platform === 'darwin' ? [{
