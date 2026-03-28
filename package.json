@@ -18,8 +18,10 @@
     "files": [
       "main.js",
       "launcher.html",
-      "quizzes/**/*"
+      "quizzes/**/*",
+      "icons/**/*"
     ],
+    "asar": false,
     "mac": {
       "category": "public.app-category.education",
       "icon": "icons/icon.png",
