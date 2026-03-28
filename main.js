@@ -4,13 +4,6 @@ const path = require('path');
 let mainWindow;
 let quizWindows = [];
 
-function getResourcePath(...segments) {
-  if (app.isPackaged) {
-    return path.join(process.resourcesPath, 'app', ...segments);
-  }
-  return path.join(__dirname, ...segments);
-}
-
 function createLauncher() {
   mainWindow = new BrowserWindow({
     width: 680,
@@ -27,7 +20,7 @@ function createLauncher() {
     title: 'Language Quiz'
   });
 
-  mainWindow.loadFile(getResourcePath('launcher.html'));
+  mainWindow.loadFile(path.join(__dirname, 'launcher.html'));
 
   mainWindow.once('ready-to-show', () => {
     mainWindow.show();
@@ -41,7 +34,7 @@ function createLauncher() {
 }
 
 function openQuiz(filename, title) {
-  const quizPath = getResourcePath('quizzes', filename);
+  const quizPath = path.join(__dirname, 'quizzes', filename);
 
   const win = new BrowserWindow({
     width: 720,
