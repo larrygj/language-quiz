@@ -1,20 +1,20 @@
-const { app, BrowserWindow, ipcMain, Menu } = require('electron');
+const { app, BrowserWindow, ipcMain, Menu, shell } = require('electron');
 const path = require('path');
 
 let mainWindow;
-let quizWindows = [];
 
 function createLauncher() {
   mainWindow = new BrowserWindow({
     width: 680,
-    height: 580,
+    height: 600,
     minWidth: 560,
-    minHeight: 480,
+    minHeight: 500,
     titleBarStyle: process.platform === 'darwin' ? 'hiddenInset' : 'default',
     backgroundColor: '#0d0d0d',
     webPreferences: {
       nodeIntegration: true,
       contextIsolation: false,
+      webSecurity: false,
     },
     show: false,
     title: 'Language Quiz'
@@ -28,45 +28,39 @@ function createLauncher() {
 
   mainWindow.on('closed', () => {
     mainWindow = null;
-    quizWindows.forEach(w => { if (!w.isDestroyed()) w.close(); });
-    quizWindows = [];
   });
 }
 
-function openQuiz(filename, title) {
+ipcMain.on('open-quiz', (event, { filename, title }) => {
   const quizPath = path.join(__dirname, 'quizzes', filename);
 
   const win = new BrowserWindow({
-    width: 720,
-    height: 820,
-    minWidth: 560,
-    minHeight: 600,
+    width: 750,
+    height: 850,
+    minWidth: 580,
+    minHeight: 650,
     titleBarStyle: process.platform === 'darwin' ? 'hiddenInset' : 'default',
     backgroundColor: '#0d0d0d',
     title: title,
     webPreferences: {
       nodeIntegration: false,
-      contextIsolation: true,
+      contextIsolation: false,
       webSecurity: false,
+      allowRunningInsecureContent: true,
     },
     show: false,
   });
 
-  win.loadFile(quizPath);
+  win.loadURL('file://' + quizPath);
+
+  win.webContents.on('did-fail-load', (event, errorCode, errorDescription) => {
+    const altPath = path.join(process.resourcesPath, 'app', 'quizzes', filename);
+    win.loadURL('file://' + altPath);
+  });
 
   win.once('ready-to-show', () => {
     win.show();
   });
-
-  win.on('closed', () => {
-    quizWindows = quizWindows.filter(w => w !== win);
-  });
-
-  quizWindows.push(win);
-}
-
-ipcMain.on('open-quiz', (event, { filename, title }) => {
-  openQuiz(filename, title);
 });
 
 function buildMenu() {
@@ -76,51 +70,23 @@ function buildMenu() {
       submenu: [
         { role: 'about' },
         { type: 'separator' },
-        { role: 'hide' },
-        { role: 'hideOthers' },
-        { role: 'unhide' },
-        { type: 'separator' },
         { role: 'quit' }
       ]
     }] : []),
     {
-      label: 'File',
-      submenu: [
-        process.platform === 'darwin' ? { role: 'close' } : { role: 'quit' }
-      ]
-    },
-    {
       label: 'View',
       submenu: [
         { role: 'reload' },
-        { type: 'separator' },
-        { role: 'resetZoom' },
-        { role: 'zoomIn' },
-        { role: 'zoomOut' },
-        { type: 'separator' },
         { role: 'togglefullscreen' }
-      ]
-    },
-    {
-      label: 'Window',
-      submenu: [
-        { role: 'minimize' },
-        { role: 'zoom' },
-        ...(process.platform === 'darwin' ? [
-          { type: 'separator' },
-          { role: 'front' }
-        ] : [])
       ]
     }
   ];
-
   Menu.setApplicationMenu(Menu.buildFromTemplate(template));
 }
 
 app.whenReady().then(() => {
   buildMenu();
   createLauncher();
-
   app.on('activate', () => {
     if (BrowserWindow.getAllWindows().length === 0) createLauncher();
   });
