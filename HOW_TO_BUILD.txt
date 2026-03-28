@@ -198,4 +198,26 @@ Type Initial upload in the Summary (required) box at the bottom left
 Click Commit to main
 Click Publish branch at the top (you can see that button already there)
 
-That's it — the build starts automatically on GitHub! Let me know what you see after Step 4.
+That's it — the build starts automatically on GitHub! Let me know what you see after Step 
+
+
+
+
+
+
+
+You're so close! The commit worked perfectly. Now you just need to push it up to GitHub.
+Click "Show in Finder" — actually wait, ignore that. Look at the top of the GitHub Desktop window. Where it previously said "Publish branch" it should now say either "Push origin" or "Fetch origin".
+I can see "Fetch origin" at the top right of your screen. Click that button — it may need one click to become "Push origin" and then a second click to actually push.
+If clicking "Fetch origin" changes it to "Push origin", click it again immediately.
+Once you've pushed, go back to Safari, go to your GitHub repo page (github.com/larrygj/language-quiz), and click the Actions tab at the top. You should see the build starting within about 30 seconds — a yellow spinning circle next to "Build Language Quiz App". That means GitHub's cloud computers are building your Mac and Windows apps right now!
+Let me know what you see after you click that Fetch/Push button.
+
+
+
+
+
+
+
+
+4.
