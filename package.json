@@ -30,6 +30,14 @@
         { "target": "dmg", "arch": ["x64", "arm64"] }
       ]
     },
+    "dmg": {
+      "contents": [
+        { "x": 130, "y": 220, "type": "file" },
+        { "x": 410, "y": 220, "type": "link", "path": "/Applications" }
+      ],
+      "window": { "width": 540, "height": 380 },
+      "additionalDmgFiles": ["HOW_TO_OPEN.html"]
+    },
     "win": {
       "icon": "icons/icon.png",
       "target": [
