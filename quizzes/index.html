@@ -1,151 +1,211 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Language Quiz</title>
-<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
-<style>
-  :root {
-    --bg:#0d0d0d;--card:#161616;--border:#2a2a2a;
-    --accent:#e8b84b;--text:#f0ece0;--muted:#666;--radius:12px;
-  }
-  *{box-sizing:border-box;margin:0;padding:0;}
-  html,body{height:100%;background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;overflow:hidden;}
-  body::before{
-    content:'';position:fixed;inset:0;
-    background:
-      radial-gradient(ellipse 60% 50% at 15% 15%,rgba(232,184,75,0.06) 0%,transparent 55%),
-      radial-gradient(ellipse 50% 50% at 85% 85%,rgba(232,75,75,0.04) 0%,transparent 55%);
-    pointer-events:none;
-  }
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Language Quiz</title>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg: #0d0d0d;
+            --card: #161616;
+            --border: #2a2a2a;
+            --accent: #e8b84b;
+            --text: #f0ece0;
+            --muted: #666;
+            --radius: 12px;
+        }
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+        html, body {
+            height: 100%;
+            background: var(--bg);
+            color: var(--text);
+            font-family: 'DM Sans', sans-serif;
+            overflow: hidden;
+        }
+        body::before {
+            content: '';
+            position: fixed;
+            inset: 0;
+            background:
+                radial-gradient(ellipse 60% 50% at 15% 15%, rgba(232,184,75,0.06) 0%, transparent 55%),
+                radial-gradient(ellipse 50% 50% at 85% 85%, rgba(232,75,75,0.04) 0%, transparent 55%);
+            pointer-events: none;
+        }
 
-  .outer{
-    height:100%;
-    display:flex;
-    flex-direction:column;
-    align-items:center;
-    justify-content:center;
-    padding:28px 24px;
-    position:relative;
-    /* macOS traffic lights sit at top-left; push content down a little */
-    padding-top:40px;
-  }
+        .outer {
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 28px 24px;
+            position: relative;
+            padding-top: 40px;
+        }
 
-  /* HEADER */
-  .logo{
-    font-family:'Playfair Display',serif;
-    font-size:2.4rem;font-weight:900;letter-spacing:-1px;
-    margin-bottom:4px;
-  }
-  .logo span{color:var(--accent);}
-  .tagline{font-size:0.75rem;color:var(--muted);letter-spacing:0.18em;text-transform:uppercase;margin-bottom:28px;}
+        .logo {
+            font-family: 'Playfair Display', serif;
+            font-size: 2.4rem;
+            font-weight: 900;
+            letter-spacing: -1px;
+            margin-bottom: 4px;
+        }
+        .logo span { color: var(--accent); }
+        .tagline {
+            font-size: 0.75rem;
+            color: var(--muted);
+            letter-spacing: 0.18em;
+            text-transform: uppercase;
+            margin-bottom: 28px;
+        }
 
-  /* SECTION LABELS */
-  .section-label{
-    font-size:0.65rem;letter-spacing:0.18em;text-transform:uppercase;
-    color:var(--muted);margin-bottom:8px;align-self:flex-start;width:100%;max-width:540px;
-  }
+        .section-label {
+            font-size: 0.65rem;
+            letter-spacing: 0.18em;
+            text-transform: uppercase;
+            color: var(--muted);
+            margin-bottom: 8px;
+            align-self: flex-start;
+            width: 100%;
+            max-width: 540px;
+        }
 
-  /* QUIZ GRID */
-  .grid{
-    display:grid;
-    grid-template-columns:1fr 1fr;
-    gap:9px;
-    width:100%;max-width:540px;
-    margin-bottom:14px;
-  }
+        .grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 9px;
+            width: 100%;
+            max-width: 540px;
+            margin-bottom: 14px;
+        }
 
-  .quiz-btn{
-    background:var(--card);
-    border:1px solid var(--border);
-    border-radius:var(--radius);
-    padding:14px 16px;
-    cursor:pointer;
-    text-align:left;
-    transition:border-color 0.18s, background 0.18s, transform 0.1s;
-    display:flex;align-items:center;gap:12px;
-    color:var(--text);
-  }
-  .quiz-btn:hover{border-color:var(--accent);background:rgba(232,184,75,0.06);}
-  .quiz-btn:active{transform:scale(0.97);}
+        .quiz-btn {
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 14px 16px;
+            cursor: pointer;
+            text-align: left;
+            transition: border-color 0.18s, background 0.18s, transform 0.1s;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            color: var(--text);
+        }
+        .quiz-btn:hover {
+            border-color: var(--accent);
+            background: rgba(232,184,75,0.06);
+        }
+        .quiz-btn:active {
+            transform: scale(0.97);
+        }
 
-  .quiz-btn .flag{font-size:1.4rem;flex-shrink:0;}
-  .quiz-btn .info{display:flex;flex-direction:column;gap:2px;min-width:0;}
-  .quiz-btn .lang{font-size:0.9rem;font-weight:500;white-space:nowrap;}
-  .quiz-btn .type{font-size:0.7rem;color:var(--muted);white-space:nowrap;}
+        .quiz-btn .flag {
+            font-size: 1.4rem;
+            flex-shrink: 0;
+        }
+        .quiz-btn .info {
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+            min-width: 0;
+        }
+        .quiz-btn .lang {
+            font-size: 0.9rem;
+            font-weight: 500;
+            white-space: nowrap;
+        }
+        .quiz-btn .type {
+            font-size: 0.7rem;
+            color: var(--muted);
+            white-space: nowrap;
+        }
 
-  /* DIVIDER */
-  .divider{
-    width:100%;max-width:540px;
-    height:1px;background:var(--border);
-    margin:6px 0 14px;
-  }
+        .divider {
+            width: 100%;
+            max-width: 540px;
+            height: 1px;
+            background: var(--border);
+            margin: 6px 0 14px;
+        }
 
-  .footer{
-    font-size:0.7rem;color:var(--muted);margin-top:10px;
-    text-align:center;line-height:1.6;
-  }
-</style>
+        .footer {
+            font-size: 0.7rem;
+            color: var(--muted);
+            margin-top: 10px;
+            text-align: center;
+            line-height: 1.6;
+        }
+    </style>
 </head>
 <body>
-<div class="outer">
+    <div class="outer">
+        <div class="logo">Language <span>Quiz</span></div>
+        <div class="tagline">Choose a quiz to begin</div>
 
-  <div class="logo">Language <span>Quiz</span></div>
-  <div class="tagline">Choose a quiz to begin</div>
+        <!-- VOCABULARY QUIZZES -->
+        <div class="section-label">Vocabulary — Words</div>
+        <div class="grid" id="vocab-grid">
+            <button class="quiz-btn" onclick="openQuiz('quizzes/spanish_quiz_300.html', '¡Español! — Vocabulary')">
+                <span class="flag">🇲🇽</span>
+                <div class="info"><span class="lang">Spanish</span><span class="type">300 words</span></div>
+            </button>
+            <button class="quiz-btn" onclick="openQuiz('quizzes/french_quiz_300.html', 'Français — Vocabulary')">
+                <span class="flag">🇫🇷</span>
+                <div class="info"><span class="lang">French</span><span class="type">300 words</span></div>
+            </button>
+            <button class="quiz-btn" onclick="openQuiz('quizzes/german_quiz_300.html', 'Deutsch — Vocabulary')">
+                <span class="flag">🇩🇪</span>
+                <div class="info"><span class="lang">German</span><span class="type">300 words</span></div>
+            </button>
+            <button class="quiz-btn" onclick="openQuiz('quizzes/italian_quiz_300.html', 'Italiano — Vocabulary')">
+                <span class="flag">🇮🇹</span>
+                <div class="info"><span class="lang">Italian</span><span class="type">300 words</span></div>
+            </button>
+            <button class="quiz-btn" onclick="openQuiz('quizzes/norwegian_quiz_300.html', 'Norsk — Vocabulary')">
+                <span class="flag">🇳🇴</span>
+                <div class="info"><span class="lang">Norwegian</span><span class="type">300 words</span></div>
+            </button>
+            <button class="quiz-btn" onclick="openQuiz('quizzes/russian_quiz_300.html', 'Русский — Vocabulary')">
+                <span class="flag">🇷🇺</span>
+                <div class="info"><span class="lang">Russian</span><span class="type">300 words</span></div>
+            </button>
+        </div>
 
-  <!-- VOCABULARY QUIZZES -->
-  <div class="section-label">Vocabulary — Words</div>
-  <div class="grid" id="vocab-grid">
-    <button class="quiz-btn" onclick="open('spanish_quiz_300.html','¡Español! — Vocabulary')">
-      <span class="flag">🇲🇽</span>
-      <div class="info"><span class="lang">Spanish</span><span class="type">300 words</span></div>
-    </button>
-    <button class="quiz-btn" onclick="open('french_quiz_300.html','Français — Vocabulary')">
-      <span class="flag">🇫🇷</span>
-      <div class="info"><span class="lang">French</span><span class="type">300 words</span></div>
-    </button>
-    <button class="quiz-btn" onclick="open('german_quiz_300.html','Deutsch — Vocabulary')">
-      <span class="flag">🇩🇪</span>
-      <div class="info"><span class="lang">German</span><span class="type">300 words</span></div>
-    </button>
-    <button class="quiz-btn" onclick="open('italian_quiz_300.html','Italiano — Vocabulary')">
-      <span class="flag">🇮🇹</span>
-      <div class="info"><span class="lang">Italian</span><span class="type">300 words</span></div>
-    </button>
-    <button class="quiz-btn" onclick="open('norwegian_quiz_300.html','Norsk — Vocabulary')">
-      <span class="flag">🇳🇴</span>
-      <div class="info"><span class="lang">Norwegian</span><span class="type">300 words</span></div>
-    </button>
-    <button class="quiz-btn" onclick="open('russian_quiz_300.html','Русский — Vocabulary')">
-      <span class="flag">🇷🇺</span>
-      <div class="info"><span class="lang">Russian</span><span class="type">300 words</span></div>
-    </button>
-  </div>
+        <!-- SENTENCE QUIZZES -->
+        <div class="section-label">Sentences — Translation</div>
+        <div class="grid">
+            <button class="quiz-btn" onclick="openQuiz('quizzes/spanish_sentences_300.html', '¡Español! — Sentences')">
+                <span class="flag">🇲🇽</span>
+                <div class="info"><span class="lang">Spanish</span><span class="type">Sentence translation</span></div>
+            </button>
+            <button class="quiz-btn" onclick="openQuiz('quizzes/norwegian_sentences_300.html', 'Norsk — Sentences')">
+                <span class="flag">🇳🇴</span>
+                <div class="info"><span class="lang">Norwegian</span><span class="type">Sentence translation</span></div>
+            </button>
+        </div>
 
-  <!-- SENTENCE QUIZZES -->
-  <div class="section-label">Sentences — Translation</div>
-  <div class="grid">
-    <button class="quiz-btn" onclick="open('spanish_sentences_300.html','¡Español! — Sentences')">
-      <span class="flag">🇲🇽</span>
-      <div class="info"><span class="lang">Spanish</span><span class="type">Sentence translation</span></div>
-    </button>
-    <button class="quiz-btn" onclick="open('norwegian_sentences_300.html','Norsk — Sentences')">
-      <span class="flag">🇳🇴</span>
-      <div class="info"><span class="lang">Norwegian</span><span class="type">Sentence translation</span></div>
-    </button>
-  </div>
+        <div class="divider"></div>
+        <div class="footer">
+            20 random questions per session &nbsp;·&nbsp; 
+            Score 17+ to earn champion &nbsp;·&nbsp; 
+            Tap 🔊 to hear pronunciation
+        </div>
+    </div>
 
-  <div class="divider"></div>
-  <div class="footer">20 random questions per session &nbsp;·&nbsp; Score 17+ to earn champion &nbsp;·&nbsp; Tap 🔊 to hear pronunciation</div>
-</div>
-
-<script>
-const { ipcRenderer } = require('electron');
-
-function open(filename, title) {
-  ipcRenderer.send('open-quiz', { filename, title });
-}
-</script>
+    <script>
+        function openQuiz(filename, title) {
+            // For GitHub Pages: simply navigate to the quiz file
+            window.location.href = filename;
+            
+            // Optional: You could also open in a new tab if you prefer
+            // window.open(filename, '_blank');
+        }
+    </script>
 </body>
 </html>
