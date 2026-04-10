@@ -1,0 +1,349 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>Italiano! — Sentence Quiz</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg:#0d0d0d;--card:#161616;--border:#2a2a2a;
+    --accent:#e8b84b;--correct:#4be87e;--wrong:#e84b4b;
+    --text:#f0ece0;--muted:#888;--radius:14px;
+  }
+  *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
+  body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;min-height:100vh;min-height:-webkit-fill-available;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:20px;overflow-x:hidden;}
+  body::before{content:'';position:fixed;inset:0;background:
+    radial-gradient(ellipse 60% 50% at 20% 20%,rgba(232,184,75,0.07) 0%,transparent 60%),
+    radial-gradient(ellipse 50% 40% at 80% 80%,rgba(232,75,75,0.05) 0%,transparent 60%);
+    pointer-events:none;z-index:0;}
+  .container{position:relative;z-index:1;width:100%;max-width:600px;}
+
+  /* SPLASH */
+  #splash-screen{text-align:center;padding:20px;}
+  .splash-logo{font-family:'Playfair Display',serif;font-size:clamp(2.6rem,9vw,4rem);font-weight:900;letter-spacing:-2px;line-height:1;margin-bottom:6px;}
+  .splash-logo span{color:var(--accent);}
+  .splash-subtitle{color:var(--muted);font-size:0.78rem;letter-spacing:0.2em;text-transform:uppercase;margin-bottom:32px;}
+  .splash-features{list-style:none;text-align:left;display:inline-flex;flex-direction:column;gap:14px;margin-bottom:38px;background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:22px 26px;width:100%;max-width:400px;}
+  .splash-features li{display:flex;align-items:center;gap:12px;font-size:0.93rem;color:var(--text);}
+  .splash-features li .icon{font-size:1.3rem;width:28px;flex-shrink:0;text-align:center;}
+  .start-btn{background:var(--accent);color:#000;border:none;border-radius:var(--radius);font-family:'DM Sans',sans-serif;font-size:1.05rem;font-weight:500;padding:18px 56px;cursor:pointer;letter-spacing:0.04em;display:inline-block;}
+  .start-btn:active{transform:scale(0.96);background:#f0c464;}
+  .splash-note{color:var(--muted);font-size:0.74rem;margin-top:14px;}
+
+  /* HEADER */
+  header{text-align:center;margin-bottom:22px;}
+  .logo{font-family:'Playfair Display',serif;font-size:clamp(1.8rem,5vw,2.4rem);font-weight:900;letter-spacing:-1px;}
+  .logo span{color:var(--accent);}
+  .subtitle{color:var(--muted);font-size:0.72rem;letter-spacing:0.16em;text-transform:uppercase;margin-top:4px;}
+
+  /* PROGRESS */
+  .progress-row{display:flex;align-items:center;gap:10px;margin-bottom:14px;}
+  .progress-bar-wrap{flex:1;height:4px;background:var(--border);border-radius:99px;overflow:hidden;}
+  .progress-bar-fill{height:100%;background:linear-gradient(90deg,var(--accent),#f0c878);border-radius:99px;transition:width 0.5s cubic-bezier(.4,0,.2,1);}
+  .progress-label{font-size:0.72rem;color:var(--muted);white-space:nowrap;}
+  .score-badge{background:var(--card);border:1px solid var(--border);border-radius:99px;padding:4px 12px;font-size:0.78rem;font-weight:500;color:var(--accent);white-space:nowrap;}
+
+  /* SENTENCE CARD */
+  .sentence-card{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:28px 22px 22px;margin-bottom:12px;position:relative;transition:border-color 0.3s;}
+  .sentence-card.correct{border-color:var(--correct);}
+  .sentence-card.wrong{border-color:var(--wrong);}
+  .sentence-number{position:absolute;top:12px;left:16px;font-size:0.65rem;color:var(--muted);letter-spacing:0.1em;text-transform:uppercase;}
+  .speak-btn{position:absolute;top:10px;right:14px;background:none;border:1px solid var(--border);border-radius:99px;color:var(--accent);font-size:1rem;cursor:pointer;padding:4px 10px;line-height:1.5;}
+  .speak-btn:active{background:rgba(232,184,75,0.15);border-color:var(--accent);}
+  .sentence-label{font-size:0.68rem;color:var(--muted);letter-spacing:0.12em;text-transform:uppercase;margin-bottom:10px;margin-top:4px;}
+  .italian-sentence{font-family:'Playfair Display',serif;font-size:clamp(1.1rem,3.5vw,1.45rem);font-weight:700;line-height:1.4;color:var(--text);}
+  .sentence-hint{font-size:0.7rem;color:var(--muted);margin-top:8px;letter-spacing:0.08em;text-transform:uppercase;}
+
+  /* CHOICES */
+  .choices{display:flex;flex-direction:column;gap:8px;margin-bottom:12px;}
+  .choice-btn{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);color:var(--text);font-family:'DM Sans',sans-serif;font-size:0.88rem;font-weight:400;padding:14px 16px;cursor:pointer;text-align:left;line-height:1.4;}
+  .choice-btn:active:not(:disabled){background:rgba(232,184,75,0.08);border-color:var(--accent);transform:scale(0.99);}
+  .choice-btn.correct{background:rgba(75,232,126,0.12);border-color:var(--correct);color:var(--correct);font-weight:500;}
+  .choice-btn.wrong{background:rgba(232,75,75,0.12);border-color:var(--wrong);color:var(--wrong);font-weight:500;}
+  .choice-btn:disabled{cursor:default;}
+
+  /* FEEDBACK */
+  .feedback{min-height:34px;text-align:center;font-size:0.87rem;color:var(--muted);margin-bottom:10px;}
+  .feedback.show-correct{color:var(--correct);font-weight:500;}
+  .feedback.show-wrong{color:var(--wrong);font-weight:500;}
+
+  /* NEXT */
+  .next-btn{width:100%;background:var(--accent);color:#000;border:none;border-radius:var(--radius);font-family:'DM Sans',sans-serif;font-size:0.95rem;font-weight:500;padding:15px;cursor:pointer;display:none;}
+  .next-btn:active{background:#f0c464;transform:scale(0.98);}
+  .next-btn.visible{display:block;}
+
+  /* DOTS */
+  .dots-row{display:flex;gap:5px;flex-wrap:wrap;justify-content:center;margin-top:12px;}
+  .dot{width:10px;height:10px;border-radius:50%;background:var(--border);transition:background 0.3s;}
+  .dot.correct{background:var(--correct);}
+  .dot.wrong{background:var(--wrong);}
+
+  /* RESULTS */
+  #results-screen{display:none;text-align:center;padding:30px 20px;}
+  .results-emoji{font-size:5rem;margin-bottom:14px;animation:pop 0.5s cubic-bezier(.4,0,.2,1);}
+  @keyframes pop{0%{transform:scale(0.3);opacity:0;}70%{transform:scale(1.15);}100%{transform:scale(1);opacity:1;}}
+  .results-title{font-family:'Playfair Display',serif;font-size:2.2rem;font-weight:900;margin-bottom:8px;}
+  .results-champ{color:var(--accent);}
+  .results-score{font-size:1.05rem;color:var(--muted);margin-bottom:28px;line-height:1.8;}
+  .results-score strong{color:var(--text);font-size:1.4rem;}
+  .restart-btn{background:var(--accent);color:#000;border:none;border-radius:var(--radius);font-family:'DM Sans',sans-serif;font-size:1rem;font-weight:500;padding:16px 40px;cursor:pointer;}
+  .restart-btn:active{background:#f0c464;}
+
+  @keyframes shake{0%,100%{transform:translateX(0)}20%{transform:translateX(-6px)}40%{transform:translateX(6px)}60%{transform:translateX(-4px)}80%{transform:translateX(4px)}}
+  .shake{animation:shake 0.35s ease;}
+  @keyframes pulse-correct{0%{box-shadow:0 0 0 0 rgba(75,232,126,0.4)}70%{box-shadow:0 0 0 12px rgba(75,232,126,0)}100%{box-shadow:0 0 0 0 rgba(75,232,126,0)}}
+  .pulse-correct{animation:pulse-correct 0.5s ease;}
+</style>
+</head>
+<body>
+<div class="container">
+
+  <!-- SPLASH -->
+  <div id="splash-screen">
+    <div class="splash-logo">🇮🇹 <span>Italiano</span>!</div>
+    <div class="splash-subtitle">Intermediate Sentence Quiz</div>
+    <ul class="splash-features">
+      <li><span class="icon">📖</span> 80+ intermediate Italian sentences</li>
+      <li><span class="icon">🔊</span> Spoken in natural Italian</li>
+      <li><span class="icon">🎯</span> Pick the correct English translation</li>
+      <li><span class="icon">🏆</span> Score 17+ out of 20 and earn Maestro!</li>
+    </ul>
+    <button class="start-btn" id="start-btn">Iniziamo! &nbsp;→</button>
+    <div class="splash-note">Tap to unlock audio &amp; begin</div>
+  </div>
+
+  <!-- QUIZ -->
+  <div id="quiz-screen" style="display:none">
+    <header>
+      <div class="logo">🇮🇹 <span>Italiano</span>!</div>
+      <div class="subtitle">Intermediate Sentence Quiz</div>
+    </header>
+    <div class="progress-row">
+      <div class="progress-bar-wrap"><div class="progress-bar-fill" id="progress-bar" style="width:0%"></div></div>
+      <div class="progress-label" id="progress-label">0 / 20</div>
+      <div class="score-badge">⭐ <span id="score-display">0</span></div>
+    </div>
+    <div class="sentence-card" id="sentence-card">
+      <div class="sentence-number" id="sentence-number">Sentence 1</div>
+      <button class="speak-btn" id="speak-btn">🔊</button>
+      <div class="sentence-label">Translate into English:</div>
+      <div class="italian-sentence" id="italian-sentence">—</div>
+      <div class="sentence-hint" id="sentence-hint">Italian → English</div>
+    </div>
+    <div class="choices" id="choices"></div>
+    <div class="feedback" id="feedback"></div>
+    <button class="next-btn" id="next-btn">Next sentence →</button>
+    <div class="dots-row" id="dots-row"></div>
+  </div>
+
+  <!-- RESULTS -->
+  <div id="results-screen">
+    <div class="results-emoji" id="results-emoji">🎉</div>
+    <div class="results-title" id="results-title">Maestro!</div>
+    <div class="results-score" id="results-score"></div>
+    <button class="restart-btn" onclick="restartQuiz()">Play Again</button>
+  </div>
+
+</div>
+<script>
+const sentenceBank = [
+  // Daily Life & Routines
+  {it:"Mi sveglio presto ogni mattina.",en:"I wake up early every morning.",decoys:["I go to bed early every morning.","I eat breakfast late.","I work late every day."]},
+  {it:"Lei arriva sempre in ritardo al lavoro.",en:"She always arrives late to work.",decoys:["She always leaves work early.","She never goes to work.","She arrives on time."]},
+  {it:"Dobbiamo partire prima delle otto.",en:"We have to leave before eight o'clock.",decoys:["We have to arrive before eight.","We want to leave after eight.","We need to wake up before eight."]},
+  {it:"Puoi aiutarmi a trovare le chiavi?",en:"Can you help me find my keys?",decoys:["Can you help me find my wallet?","Can you carry my bag?","Give me your keys."]},
+  {it:"Ho dimenticato di spegnere la luce.",en:"I forgot to turn off the light.",decoys:["I forgot to turn on the light.","I remembered to turn it off.","I couldn't find the switch."]},
+
+  // Work & School
+  {it:"Ho una riunione importante domani mattina.",en:"I have an important meeting tomorrow morning.",decoys:["I had a meeting yesterday.","I have a presentation tomorrow afternoon.","I need to prepare next week."]},
+  {it:"Il capo ci ha chiesto di finire il rapporto.",en:"The boss asked us to finish the report.",decoys:["The boss told us to start the report.","The boss asked us to review it.","He gave us a new report."]},
+  {it:"Mi hanno licenziato senza motivo.",en:"I was fired without any reason.",decoys:["I quit without reason.","I was promoted.","I resigned."]},
+  {it:"Lavora in quella ditta da tre anni.",en:"She has been working at that company for three years.",decoys:["She worked there three years ago.","She will work there three more years.","She started last year."]},
+  {it:"L'esame era più difficile di quanto mi aspettassi.",en:"The exam was harder than I expected.",decoys:["The exam was easier than expected.","It was exactly as expected.","It took longer than expected."]},
+
+  // Feelings & Opinions
+  {it:"Sono molto contento che tu sia venuto.",en:"I'm very glad you came.",decoys:["I'm sorry you came.","I'm surprised you came.","I'm glad you're leaving."]},
+  {it:"Non mi è piaciuto affatto come mi ha parlato.",en:"I didn't like how he spoke to me at all.",decoys:["I don't remember how he spoke.","I didn't understand him.","I liked the way he spoke."]},
+  {it:"Mi sembra che tu abbia ragione.",en:"I think you are right.",decoys:["I think you are wrong.","It seems you disagree.","I don't think you're right."]},
+  {it:"Sono stufo che tu arrivi sempre in ritardo.",en:"I'm fed up with you always arriving late.",decoys:["I'm worried you arrive late.","I'm surprised you arrive late.","I don't mind it."]},
+  {it:"La notizia mi ha sorpreso molto.",en:"The news surprised me a lot.",decoys:["The news worried me.","The news didn't affect me.","I wasn't surprised."]},
+
+  // Social & Relationships
+  {it:"Siamo amici da cinque anni.",en:"We have been friends for five years.",decoys:["We met five years ago.","We have known each other for five years.","We became friends recently."]},
+  {it:"Loro vanno molto d'accordo.",en:"They get along very well.",decoys:["They argue often.","They are very similar.","They meet often."]},
+  {it:"Mio fratello maggiore mi dà buoni consigli.",en:"My older brother gives me good advice.",decoys:["My brother asks me for advice.","He always disagrees.","He doesn't talk to me much."]},
+
+  // Travel & Places
+  {it:"Il volo dura circa tre ore.",en:"The flight lasts approximately three hours.",decoys:["The flight costs three hundred euros.","The flight departs in three hours.","The flight was delayed three hours."]},
+  {it:"Non ho mai visitato nessun paese dell'America del Sud.",en:"I have never visited any country in South America.",decoys:["I have visited most of South America.","I want to visit all of it.","I visited one country."]},
+  {it:"Dove posso cambiare i soldi qui vicino?",en:"Where can I exchange money near here?",decoys:["Where can I spend money?","Where is the nearest ATM?","How far is the bank?"]},
+
+  // Food & Health
+  {it:"Hai qualche allergia alimentare?",en:"Do you have any food allergies?",decoys:["Do you have dietary preferences?","Are you vegetarian?","Do you have health problems?"]},
+  {it:"Mi fa molto male la testa da stamattina.",en:"My head has been hurting a lot since this morning.",decoys:["I have a cold.","My stomach hurts.","I haven't felt well."]},
+  {it:"Il medico mi ha consigliato di riposare qualche giorno.",en:"The doctor recommended I rest for a few days.",decoys:["The doctor told me to take medicine.","Exercise more.","See a specialist."]},
+
+  // Grammar Challenges (Conditional, Subjunctive, Past)
+  {it:"Se avessi più tempo, viaggerei di più.",en:"If I had more time, I would travel more.",decoys:["If I have more time, I will travel more.","Since I have time, I travel.","Because I had time, I traveled."]},
+  {it:"Anche se pioveva, siamo andati a passeggiare.",en:"Even though it was raining, we went for a walk.",decoys:["Because it was raining, we stayed inside.","We walked before it rained.","We stopped when it started raining."]},
+  {it:"Spero che tutto vada bene.",en:"I hope everything goes well.",decoys:["I hope everything turned out well.","I expected it to go well.","I thought it went well."]},
+  {it:"Quando ero piccolo, vivevamo in campagna.",en:"When I was little, we lived in the countryside.",decoys:["When I was little, I visited the countryside.","They moved when young.","We left the countryside."]},
+
+  // Expressing Ideas & Change
+  {it:"In realtà non mi importa cosa pensano.",en:"I actually don't care what they think.",decoys:["I really care what they think.","I agree with them.","I don't understand them."]},
+  {it:"Prima lo facciamo, meglio è.",en:"The sooner we do it, the better.",decoys:["We should do it later.","The more we do it, the better.","We need to do it once."]},
+  {it:"Nonostante tutto, abbiamo continuato ad andare avanti.",en:"Despite everything, we kept going.",decoys:["Because of everything, we stopped.","After everything, we went back.","We stopped when it was done."]},
+
+  // Requests & Advice
+  {it:"Potresti abbassare un po' il volume?",en:"Would you mind turning the volume down a bit?",decoys:["Could you speak louder?","Would you like to listen?","Turn off the TV."]},
+  {it:"Che ne dici di uscire a bere qualcosa stasera?",en:"How about we go out for a drink tonight?",decoys:["Why don't we stay in?","What do you want to do?","Shall we cook dinner?"]},
+
+  // Idioms & Expressions
+  {it:"Non tutte le ciambelle riescono col buco.",en:"Not everything goes as planned.",decoys:["Everything always works perfectly.","Not all doughnuts have holes.","Some things are better than others."]},
+  {it:"Piangere sul latte versato.",en:"Crying over spilled milk.",decoys:["Worrying about small things.","Making a big mess.","Cleaning up after a mistake."]},
+  {it:"In bocca al lupo!",en:"Good luck!",decoys:["Be careful!","Watch out for wolves.","Have a nice meal!"]},
+  {it:"Non vedo l'ora!",en:"I can't wait!",decoys:["I don't see the time.","I'm not in a hurry.","I see the hour."]},
+  {it:"Essere in gamba.",en:"To be smart / capable.",decoys:["To be in trouble.","To have long legs.","To be tired."]}
+];
+
+let audioCtx=null;
+function unlockAudio(){
+  if(audioCtx)return;
+  audioCtx=new(window.AudioContext||window.webkitAudioContext)();
+  const buf=audioCtx.createBuffer(1,1,22050);
+  const src=audioCtx.createBufferSource();
+  src.buffer=buf;src.connect(audioCtx.destination);src.start(0);
+}
+function playTone(type){
+  if(!audioCtx)return;
+  if(audioCtx.state==='suspended')audioCtx.resume();
+  const ctx=audioCtx,now=ctx.currentTime;
+  if(type==='correct'){
+    [523.25,659.25,783.99].forEach((freq,i)=>{
+      const o=ctx.createOscillator(),g=ctx.createGain();
+      o.connect(g);g.connect(ctx.destination);
+      o.type='sine';
+      o.frequency.setValueAtTime(freq,now+i*0.12);
+      g.gain.setValueAtTime(0.28,now+i*0.12);
+      g.gain.exponentialRampToValueAtTime(0.001,now+i*0.12+0.35);
+      o.start(now+i*0.12);o.stop(now+i*0.12+0.4);
+    });
+  }else{
+    const o=ctx.createOscillator(),g=ctx.createGain();
+    o.connect(g);g.connect(ctx.destination);
+    o.type='sawtooth';
+    o.frequency.setValueAtTime(300,now);
+    o.frequency.exponentialRampToValueAtTime(160,now+0.4);
+    g.gain.setValueAtTime(0.18,now);
+    g.gain.exponentialRampToValueAtTime(0.001,now+0.5);
+    o.start(now);o.stop(now+0.55);
+  }
+}
+let voices=[];
+function loadVoices(){voices=window.speechSynthesis?speechSynthesis.getVoices():[];}
+function speakItalian(text){
+  if(!window.speechSynthesis)return;
+  speechSynthesis.cancel();
+  const u=new SpeechSynthesisUtterance(text);
+  u.lang='it-IT';u.rate=0.92;u.pitch=1.0;
+  if(!voices.length)loadVoices();
+  const v=voices.find(v=>v.lang.startsWith('it'))||voices[0];
+  if(v)u.voice=v;
+  speechSynthesis.speak(u);
+}
+let questions=[],current=0,score=0,answered=false;
+function shuffle(a){
+  a=[...a];
+  for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];}
+  return a;
+}
+document.getElementById('start-btn').addEventListener('click',()=>{
+  unlockAudio();loadVoices();
+  document.getElementById('splash-screen').style.display='none';
+  document.getElementById('quiz-screen').style.display='block';
+  initQuiz();
+});
+function initQuiz(){
+  questions=shuffle(sentenceBank).slice(0,20);
+  current=0;score=0;answered=false;
+  buildDots();loadQuestion();
+}
+function restartQuiz(){
+  document.getElementById('results-screen').style.display='none';
+  document.getElementById('quiz-screen').style.display='block';
+  initQuiz();
+}
+function buildDots(){
+  const row=document.getElementById('dots-row');row.innerHTML='';
+  for(let i=0;i<20;i++){const d=document.createElement('div');d.className='dot';d.id='dot-'+i;row.appendChild(d);}
+}
+function loadQuestion(){
+  answered=false;
+  const q=questions[current];
+  document.getElementById('progress-bar').style.width=(current/20*100)+'%';
+  document.getElementById('progress-label').textContent=current+' / 20';
+  document.getElementById('score-display').textContent=score;
+  document.getElementById('sentence-number').textContent='Sentence '+(current+1);
+  document.getElementById('italian-sentence').textContent=q.it;
+  document.getElementById('sentence-card').className='sentence-card';
+  const fb=document.getElementById('feedback');fb.textContent='';fb.className='feedback';
+  const choices=shuffle([q.en,...q.decoys]);
+  const el=document.getElementById('choices');el.innerHTML='';
+  choices.forEach(c=>{
+    const b=document.createElement('button');
+    b.className='choice-btn';b.textContent=c;
+    b.addEventListener('click',()=>handleAnswer(c,q.en,b));
+    el.appendChild(b);
+  });
+  document.getElementById('next-btn').className='next-btn';
+  setTimeout(()=>speakItalian(q.it),350);
+}
+function handleAnswer(chosen,correct,btn){
+  if(answered)return;answered=true;
+  const ok=chosen===correct;
+  const card=document.getElementById('sentence-card');
+  const fb=document.getElementById('feedback');
+  const nb=document.getElementById('next-btn');
+  document.querySelectorAll('.choice-btn').forEach(b=>{
+    b.disabled=true;
+    if(b.textContent===correct)b.classList.add('correct');
+  });
+  if(ok){
+    score++;btn.classList.add('correct');
+    card.classList.add('correct','pulse-correct');
+    fb.textContent='✓ Correct! Bravo!';fb.className='feedback show-correct';
+  }else{
+    btn.classList.add('wrong');card.classList.add('wrong','shake');
+    fb.textContent='✗ Incorrect. The correct answer is highlighted.';fb.className='feedback show-wrong';
+    setTimeout(()=>card.classList.remove('shake'),400);
+  }
+  playTone(ok?'correct':'wrong');
+  const dot=document.getElementById('dot-'+current);
+  if(dot)dot.className='dot '+(ok?'correct':'wrong');
+  document.getElementById('score-display').textContent=score;
+  nb.className='next-btn visible';
+  nb.textContent=current===19?'See Results →':'Next sentence →';
+}
+document.getElementById('next-btn').addEventListener('click',()=>{
+  current++;current>=20?showResults():loadQuestion();
+});
+document.getElementById('speak-btn').addEventListener('click',()=>{
+  const s=document.getElementById('italian-sentence').textContent;
+  if(s&&s!=='—')speakItalian(s);
+});
+function showResults(){
+  document.getElementById('quiz-screen').style.display='none';
+  document.getElementById('results-screen').style.display='block';
+  const champ=score>=17;
+  document.getElementById('results-emoji').textContent=champ?'🏆':score>=12?'💪':'📚';
+  const t=document.getElementById('results-title');
+  t.textContent=champ?'Maestro!':score>=12?'Ottimo lavoro!':'Continua a studiare!';
+  t.className='results-title'+(champ?' results-champ':'');
+  const msg=champ?"Outstanding! You're a true Italian champion 🌟":score>=12?"Solid work — keep building on this!":"Keep studying — you'll get there!";
+  document.getElementById('results-score').innerHTML='You got <strong>'+score+' / 20</strong> correct.<br><small style="color:var(--muted)">'+msg+'</small>';
+}
+if(window.speechSynthesis){speechSynthesis.onvoiceschanged=loadVoices;loadVoices();}
+</script>
+</body>
+</html>
